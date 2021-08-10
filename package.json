@@ -1,0 +1,22 @@
+{
+  "name": "postgres",
+  "version": "1.0.0",
+  "description": "CRUD for purchases on a PostgreSQL DB using Node JS",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "PostgreSQL",
+    "SQL",
+    "NodeJS",
+    "CRUD"
+  ],
+  "author": "João Saraceni",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "pg": "^8.7.1"
+  }
+}
