@@ -3,71 +3,32 @@
 /*                               ANCHOR imports                               */
 /* -------------------------------------------------------------------------- */
 
+import dotenv from 'dotenv';
 import pkg from 'pg';
 import express from 'express';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 
-// bcrypt.hash('123', 10, async (err, hash) => { // EXAMPLE generate bcrypt hash
-//   console.log(hash);
-// });
-
+dotenv.config();
+const secret = process.env.JWT_SECRET;
+const poolConfig = JSON.parse(process.env.POOL_CONFIG);
 const { Pool } = pkg;
 const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+app.use(cookieParser());
 
 /* -------------------------------------------------------------------------- */
 /*                ANCHOR instance and configure an object of Pool             */
 /* -------------------------------------------------------------------------- */
 
-const pool = new Pool({
-  user: 'postgres',
-  password: 'meu@deus0',
-  host: 'localhost',
-  port: 5432,
-  database: 'node-postgres',
-});
+const pool = new Pool(poolConfig);
 
-/* -------------------------------------------------------------------------- */
-/*                          ANCHOR pool error handling                        */
-/* -------------------------------------------------------------------------- */
-// "the pool will emit an error on behalf of any idle clients
-// it contains if a backend error or network partition happens"
-// TODO understand this. Source: https://node-postgres.com/features/pooling
-
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
+pool.on('error', (err, client) => {
+  console.error(`Client: ${client} \n Error: ${err}`);
   process.exit(-1);
 });
-
-/* -------------------------------------------------------------------------- */
-/*                             EXAMPLE login query                            */
-/* -------------------------------------------------------------------------- */
-
-// const query = 'SELECT id, name FROM users WHERE $1 = users.email AND $2 = users.password';
-// const values = [
-//   'jpgsaraceni@gmail.com',
-//   '$2b$10$hfgAGGX.QYiFQf1MW0vHN.qiXNKzxgWqN4PmRA3B3.xLi9gpho9jG',
-// ];
-
-/* -------------------------------------------------------------------------- */
-/*                   EXAMPLE connect to DB and execute query                  */
-/* -------------------------------------------------------------------------- */
-
-// pool.connect()
-//   .then((client) => {
-//     console.log('connected');
-//     return client
-//       .query(query, values)
-//       .then((result) => {
-//         client.release();
-//         console.table(result.rows);
-//       })
-//       .catch((err) => {
-//         client.release();
-//         console.log(err);
-//       });
-//   });
 
 /* -------------------------------------------------------------------------- */
 /*                                ANCHOR login                                */
@@ -75,43 +36,152 @@ pool.on('error', (err) => {
 
 app.get('/login', (req, res) => {
   const { email } = req.body;
-  const { password } = req.body;
+  const { password: frontPassword } = req.body;
 
-  const query = 'SELECT id, name, password FROM users WHERE $1 = users.email';
+  const query = 'SELECT id, name, password, deleted'
+    + ' FROM users'
+    + ' WHERE $1 = email AND deleted = false';
   const values = [email];
 
   pool.connect()
-    .then((client) => {
-      console.log('connected');
-      return client
-        .query(query, values)
-        .then((result) => {
-          const { password: dbPassword, name } = result.rows[0];
+    .then((client) => client.query(query, values)
+      .then((result) => {
+        const { name, password: dbPassword, id } = result.rows[0];
 
-          // TODO status codes
-
-          bcrypt.compare(password, dbPassword).then((bcryptResult) => {
-            if (bcryptResult) { // correct password
-              console.log('Logged in.');
-              res.status(200).send(`Hello, ${name}!`);
-            } else { // wrong password
-              console.log('Invalid password.');
-              res.sendStatus(500);
-            }
-          }).catch((err) => { // bcrypt error
-            console.log(`bcrypt failed: ${err}`);
-            res.sendStatus(500);
-          });
-          client.release();
-        })
-        .catch((err) => { // query error
-          client.release();
-          console.log(`query failed: ${err}`);
+        bcrypt.compare(frontPassword, dbPassword).then((bcryptResult) => {
+          if (bcryptResult) {
+            jwt.sign({ id }, secret, (err, token) => {
+              // TODO read about Authorization header using Bearer schema
+              if (err) {
+                console.log(`JWT failed: ${err}`);
+                res.sendStatus(500);
+              } else {
+                res.cookie('token', token);
+                res.status(200).send(`Hello, ${name}!`);
+              }
+            });
+          } else {
+            res.sendStatus(401);
+          }
+        }).catch((err) => {
+          console.log(`Bcrypt failed: ${err}`);
           res.sendStatus(500);
         });
-    }).catch((err) => { // connect error
+        client.release();
+      })
+
+      .catch((err) => {
+        client.release();
+        console.log(`Query failed: ${err}`);
+        res.sendStatus(500);
+      }))
+
+    .catch((err) => {
       console.log(`Connection failed: ${err.message}`);
+      res.sendStatus(500);
     });
+});
+
+/* -------------------------------------------------------------------------- */
+/*                            ANCHOR CRUD suppliers                           */
+/* -------------------------------------------------------------------------- */
+// TODO: create a middleware for jwt token verification.
+// action for when query fails
+// add optional fields (email and phone_number)
+app.post('/suppliers', (req, res) => {
+  const { token } = req.cookies;
+  // const frontEndValues = {
+  //   name: req.body.name,
+  //   city: req.body.city,
+  //   state: req.body.state,
+  // };
+  const exampleValues = ['Fornecedor Teste', 'Miguel Pereira', 'RJ'];
+
+  jwt.verify(token, secret, (err, decoded) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      const { id: userId } = decoded;
+
+      const query = 'INSERT INTO suppliers'
+        + ' (name, city, state, create_user_id)'
+        + ' VALUES'
+        + ' ($1, $2, $3, $4)';
+      const values = exampleValues.push(userId); // to be replaced by frontEndValues
+
+      pool.connect()
+        .then((client) => client.query(query, values)
+          .then(() => res.sendStatus(200)));
+    }
+  });
+});
+
+app.get('/suppliers', (req, res) => {
+  const { token } = req.cookies;
+
+  jwt.verify(token, secret, (err) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      const query = 'SELECT * FROM suppliers WHERE deleted = false';
+      const values = [];
+
+      pool.connect()
+        .then((client) => client.query(query, values)
+          .then((result) => res.status(200).send(result.rows)));
+    }
+  });
+});
+
+app.put('/suppliers', (req, res) => {
+  const { token } = req.cookies;
+  // const frontEndValues = {
+  //   supplierId: req.body.supplierId,
+  //   name: req.body.name,
+  //   city: req.body.city,
+  //   state: req.body.sate,
+  // };
+  const exampleSupplierId = 2;
+
+  jwt.verify(token, secret, (err, decoded) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      const { id: userId } = decoded;
+
+      const query = 'UPDATE suppliers'
+        + ' SET name=$1, update_date=NOW(), update_user_id=$2'
+        + ' WHERE id=$3 AND deleted=false';
+      const values = ['Usuário Atualizado', userId, exampleSupplierId]; // to be replaced with frontEndValues.
+
+      pool.connect()
+        .then((client) => client.query(query, values)
+          .then((result) => res.status(200).send(result.rows)));
+    }
+  });
+});
+
+app.delete('/suppliers', (req, res) => {
+  const { token } = req.cookies;
+  // const { supplierId } = req.body;
+  const exampleSupplierId = 1;
+
+  jwt.verify(token, secret, (err, decoded) => {
+    if (err) {
+      res.sendStatus(403);
+    } else {
+      const { id: userId } = decoded;
+
+      const query = 'UPDATE suppliers'
+        + ' SET deleted=true, update_date=NOW(), update_user_id=$1'
+        + ' WHERE id=$2';
+      const values = [userId, exampleSupplierId];
+
+      pool.connect()
+        .then((client) => client.query(query, values)
+          .then(() => res.sendStatus(200)));
+    }
+  });
 });
 
 app.listen(80);
