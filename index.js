@@ -38,7 +38,7 @@ app.get('/login', (req, res) => {
   const { email } = req.body;
   const { password: frontPassword } = req.body;
 
-  const query = 'SELECT id, name, password, deleted'
+  const query = 'SELECT id, name, password'
     + ' FROM users'
     + ' WHERE $1 = email AND deleted = false';
   const values = [email];
@@ -51,7 +51,6 @@ app.get('/login', (req, res) => {
         bcrypt.compare(frontPassword, dbPassword).then((bcryptResult) => {
           if (bcryptResult) {
             jwt.sign({ id }, secret, (err, token) => {
-              // TODO read about Authorization header using Bearer schema
               if (err) {
                 console.log(`JWT failed: ${err}`);
                 res.sendStatus(500);
@@ -83,35 +82,142 @@ app.get('/login', (req, res) => {
 });
 
 /* -------------------------------------------------------------------------- */
-/*                            ANCHOR CRUD suppliers                           */
+/*                        ANCHOR Pool connect function                        */
 /* -------------------------------------------------------------------------- */
-// TODO: create a middleware for jwt token verification.
-// action for when query fails
-// add optional fields (email and phone_number)
-app.post('/suppliers', (req, res) => {
+
+function connectCRUD(query, values, res) {
+  pool.connect()
+    .then((client) => client.query(query, values)
+      .then((result) => res.status(200).send(result.rows))
+      .catch((queryError) => {
+        console.log(queryError);
+        res.sendStatus(500);
+      }))
+    .catch((connectionError) => {
+      console.log(connectionError);
+      res.sendStatus(500);
+    });
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              ANCHOR CRUD users                             */
+/* -------------------------------------------------------------------------- */
+
+app.post('/users', (req, res) => {
   const { token } = req.cookies;
-  // const frontEndValues = {
-  //   name: req.body.name,
-  //   city: req.body.city,
-  //   state: req.body.state,
-  // };
-  const exampleValues = ['Fornecedor Teste', 'Miguel Pereira', 'RJ'];
+  const { password: receivedPassword } = req.body;
+  const values = [req.body.name, req.body.email];
 
   jwt.verify(token, secret, (err, decoded) => {
     if (err) {
-      res.sendStatus(403);
+      res.sendStatus(401);
+    } else {
+      const { id: userId } = decoded;
+
+      bcrypt.hash(receivedPassword, 10, (bcryptError, hash) => {
+        if (bcryptError) throw bcryptError;
+        values.push(hash);
+
+        const query = 'INSERT INTO users'
+          + ' (name, email, password, create_user_id)'
+          + ' VALUES'
+          + ' ($1, $2, $3, $4)'
+          + ' RETURNING name, email, password, create_user_id';
+        values.push(userId);
+
+        connectCRUD(query, values, res);
+      });
+    }
+  });
+});
+
+app.get('/users', (req, res) => {
+  const { token } = req.cookies;
+
+  jwt.verify(token, secret, (err) => {
+    if (err) {
+      res.sendStatus(401);
+    } else {
+      const query = 'SELECT * FROM users WHERE deleted = false';
+      const values = [];
+
+      connectCRUD(query, values, res);
+    }
+  });
+});
+
+app.put('/users', (req, res) => {
+  const { token } = req.cookies;
+  const { password: receivedPassword } = req.body;
+  const values = [req.body.name, req.body.email, req.body.id];
+
+  jwt.verify(token, secret, (err, decoded) => {
+    if (err) {
+      res.sendStatus(401);
+    } else {
+      const { id: userId } = decoded;
+
+      bcrypt.hash(receivedPassword, 10, (bcryptError, hash) => {
+        if (bcryptError) throw bcryptError;
+        values.push(hash);
+
+        const query = 'UPDATE users'
+          + ' SET name=$1, email=$2, password=$4, update_date=NOW(), update_user_id=$5'
+          + ' WHERE id=$3 AND deleted=false'
+          + ' RETURNING name, email, password, create_user_id, create_date, update_user_id, update_date';
+        values.push(userId);
+
+        connectCRUD(query, values, res);
+      });
+    }
+  });
+});
+
+app.delete('/users', (req, res) => {
+  const { token } = req.cookies;
+  const values = [req.body.id];
+
+  jwt.verify(token, secret, (err, decoded) => {
+    if (err) {
+      res.sendStatus(401);
+    } else {
+      const { id: userId } = decoded;
+
+      const query = 'UPDATE users'
+        + ' SET deleted=true, update_date=NOW(), update_user_id=$2'
+        + ' WHERE id=$1'
+        + ' RETURNING id, name, deleted';
+      values.push(userId);
+
+      connectCRUD(query, values, res);
+    }
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/*                            ANCHOR CRUD suppliers                           */
+/* -------------------------------------------------------------------------- */
+// TODO: create a middleware for jwt token verification.
+// add optional fields (email and phone_number)
+
+app.post('/suppliers', (req, res) => {
+  const { token } = req.cookies;
+  const values = [req.body.name, req.body.city, req.body.state];
+
+  jwt.verify(token, secret, (err, decoded) => {
+    if (err) {
+      res.sendStatus(401);
     } else {
       const { id: userId } = decoded;
 
       const query = 'INSERT INTO suppliers'
         + ' (name, city, state, create_user_id)'
         + ' VALUES'
-        + ' ($1, $2, $3, $4)';
-      const values = exampleValues.push(userId); // to be replaced by frontEndValues
+        + ' ($1, $2, $3, $4)'
+        + ' RETURNING name, city, state, create_user_id';
+      values.push(userId);
 
-      pool.connect()
-        .then((client) => client.query(query, values)
-          .then(() => res.sendStatus(200)));
+      connectCRUD(query, values, res);
     }
   });
 });
@@ -121,65 +227,54 @@ app.get('/suppliers', (req, res) => {
 
   jwt.verify(token, secret, (err) => {
     if (err) {
-      res.sendStatus(403);
+      res.sendStatus(401);
     } else {
       const query = 'SELECT * FROM suppliers WHERE deleted = false';
       const values = [];
 
-      pool.connect()
-        .then((client) => client.query(query, values)
-          .then((result) => res.status(200).send(result.rows)));
+      connectCRUD(query, values, res);
     }
   });
 });
 
 app.put('/suppliers', (req, res) => {
   const { token } = req.cookies;
-  // const frontEndValues = {
-  //   supplierId: req.body.supplierId,
-  //   name: req.body.name,
-  //   city: req.body.city,
-  //   state: req.body.sate,
-  // };
-  const exampleSupplierId = 2;
+  const values = [req.body.supplierId, req.body.name];
 
   jwt.verify(token, secret, (err, decoded) => {
     if (err) {
-      res.sendStatus(403);
+      res.sendStatus(401);
     } else {
       const { id: userId } = decoded;
 
       const query = 'UPDATE suppliers'
-        + ' SET name=$1, update_date=NOW(), update_user_id=$2'
-        + ' WHERE id=$3 AND deleted=false';
-      const values = ['Usuário Atualizado', userId, exampleSupplierId]; // to be replaced with frontEndValues.
+        + ' SET name=$2, update_date=NOW(), update_user_id=$3'
+        + ' WHERE id=$1 AND deleted=false'
+        + ' RETURNING id, name, city, state';
+      values.push(userId);
 
-      pool.connect()
-        .then((client) => client.query(query, values)
-          .then((result) => res.status(200).send(result.rows)));
+      connectCRUD(query, values, res);
     }
   });
 });
 
 app.delete('/suppliers', (req, res) => {
   const { token } = req.cookies;
-  // const { supplierId } = req.body;
-  const exampleSupplierId = 1;
+  const values = [req.body.supplierId];
 
   jwt.verify(token, secret, (err, decoded) => {
     if (err) {
-      res.sendStatus(403);
+      res.sendStatus(401);
     } else {
       const { id: userId } = decoded;
 
       const query = 'UPDATE suppliers'
-        + ' SET deleted=true, update_date=NOW(), update_user_id=$1'
-        + ' WHERE id=$2';
-      const values = [userId, exampleSupplierId];
+        + ' SET deleted=true, update_date=NOW(), update_user_id=$2'
+        + ' WHERE id=$1'
+        + ' RETURNING id, name, deleted';
+      values.push(userId);
 
-      pool.connect()
-        .then((client) => client.query(query, values)
-          .then(() => res.sendStatus(200)));
+      connectCRUD(query, values, res);
     }
   });
 });
