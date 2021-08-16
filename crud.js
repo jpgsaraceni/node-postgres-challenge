@@ -88,7 +88,11 @@ function PostgreCrud() {
     pool.connect()
       .then((client) => client.query(query, values)
         .then((result) => {
-          const { name, password: dbPassword, id } = result.rows[0]; // treat if result is null
+          if (result.rowCount === 0) { // if email is not registered
+            res.sendStatus(401);
+            return false;
+          }
+          const { name, password: dbPassword, id } = result.rows[0];
 
           bcrypt.compare(password, dbPassword).then((bcryptResult) => {
             if (bcryptResult) {
@@ -109,6 +113,7 @@ function PostgreCrud() {
             res.sendStatus(500);
           });
           client.release();
+          return true;
         })
 
         .catch((err) => {
