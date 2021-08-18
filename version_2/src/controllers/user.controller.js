@@ -3,7 +3,7 @@ import { verify } from '../config/session.js';
 import { createHash } from '../config/hash.js';
 // import QueryBuilder from '../config/query.js';
 
-export const createUsers = (req, res) => {
+export const createUsers = (req, res) => { // refactor this
   const { token } = req.cookies;
   const { password } = req.body;
   const values = [

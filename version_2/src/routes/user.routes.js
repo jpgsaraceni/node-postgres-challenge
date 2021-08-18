@@ -1,5 +1,5 @@
 import Router from 'express-promise-router';
-import { createUsers, readUsers, updateUsers, deleteUsers } from '../controllers/user.controller.js'
+import { createUsers, readUsers, updateUsers, deleteUsers } from '../controllers/user.controller.js';
 
 const router = Router();
 
