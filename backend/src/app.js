@@ -10,6 +10,9 @@ import supplierRoute from './routes/supplier.routes.js';
 import userRoute from './routes/user.routes.js';
 import restoreRoute from './routes/restore.routes.js';
 import purchaseRoute from './routes/purchase.routes.js';
+import purchaseItemsRoute from './routes/purchaseItems.routes.js';
+import payablesRoute from './routes/payables.routes.js';
+//import logoutRoute from './routes/logout.routes.js';
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -25,6 +28,9 @@ app.use('/product_groups', productGroupRoute);
 app.use('/suppliers', supplierRoute);
 app.use('/users', userRoute);
 app.use('/restore', restoreRoute);
-app.use('/purchase', purchaseRoute);
+app.use('/purchases', purchaseRoute);
+app.use('/purchase_items', purchaseItemsRoute);
+app.use('/payables', payablesRoute);
+//app.use('/logout', logoutRoute);
 
 export default app;

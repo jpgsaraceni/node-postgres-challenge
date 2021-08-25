@@ -1,4 +1,4 @@
-import runQuery from '../config/database.js';
+import { runQuery } from '../config/database.js';
 import { sign } from '../config/session.js';
 import { compare } from '../config/hash.js';
 

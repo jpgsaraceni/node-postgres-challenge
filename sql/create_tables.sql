@@ -58,7 +58,7 @@ CREATE TABLE suppliers (
 CREATE TABLE purchases (
 	id serial NOT NULL UNIQUE,
 	supplier_id integer NOT NULL,
-	price DECIMAL(10,2) NOT NULL UNIQUE,
+	total_price DECIMAL(10,2) NOT NULL,
   number_of_payments integer NOT NULL DEFAULT 1,
 	create_date TIMESTAMP NOT NULL DEFAULT NOW(),
 	create_user_id integer NOT NULL,
@@ -85,7 +85,7 @@ CREATE TABLE purchase_items (
 CREATE TABLE payables (
 	id serial NOT NULL UNIQUE,
 	purchase_id integer NOT NULL UNIQUE,
-	price integer NOT NULL,
+	payment_price integer NOT NULL,
 	due_date DATE NOT NULL,
 	purchase_date DATE NOT NULL DEFAULT NOW(),
 	payment_number integer NOT NULL DEFAULT 1,

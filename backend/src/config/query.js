@@ -1,5 +1,7 @@
-import runQuery from '../config/database.js';
+import { runQuery, runTransaction } from '../config/database.js';
 import { verify } from '../config/session.js';
+
+// FIXME treat the req.body object in the controllers, not here
 
 export const insert = (req, res, table, hash) => {
   const { token } = req.cookies;
@@ -72,6 +74,7 @@ export const update = (req, res, table, notNull) => { // TODO: options for where
     const query = `UPDATE ${table}`
       + ` SET ${pairs.join(', ')}, update_date=NOW(), update_user_id=$${count.length}` // FIXME id is included
       // + ` WHERE ${whereKey}=${count} AND deleted=false`
+      // WHERE 1=1 AND filtro
       + ' WHERE id=$1 AND deleted=false'
       + ' RETURNING *';
 
@@ -86,7 +89,7 @@ export const update = (req, res, table, notNull) => { // TODO: options for where
   }).catch(() => res.sendStatus(401));
 }
 
-export const deleteQuery = (req, res, table) => {
+export const deleteQuery = (req, res, table) => { // TODO verify if foreign key to existing rows
   const { token } = req.cookies;
   const values = [req.body.id];
 
@@ -106,3 +109,45 @@ export const deleteQuery = (req, res, table) => {
       });
   }).catch(() => res.sendStatus(401));
 }
+
+export const insertWithTransaction = async (table, ...queryObjects) => {
+  const queryArray = [...queryObjects]
+  const primaryKeys = Object.keys(queryArray[0]);
+  const primaryValues = Object.values(queryArray[0]);
+  queryArray.shift();
+
+  const primaryCount = primaryValues.map((key, i) => i + 1);
+
+  const primaryQuery = `INSERT INTO ${table[0]}`
+    + ` (${primaryKeys.join(', ')})`
+    + ' VALUES'
+    + ` ($${primaryCount.join(', $')})`
+    + ` RETURNING *`;
+
+  let secondaryQueries = [];
+  let secondaryValues = [];
+
+  queryArray.forEach((queryObject, k) => {
+    const keys = Object.keys(queryObject);
+    const values = Object.values(queryObject);
+    values.pop();
+    const count = keys.map((key, i) => i + 1);
+
+    const query = `INSERT INTO ${table[k + 1]}`
+      + ` (${keys.join(', ')})`
+      + ' VALUES'
+      + ` ($${count.join(', $')})`
+      + ` RETURNING *`;
+
+    secondaryQueries.push(query);
+    secondaryValues.push(values);
+  })
+
+  return await runTransaction(primaryQuery, primaryValues, secondaryQueries, secondaryValues);
+}
+
+// TODO update and delete for connected tables (with transactions)
+
+// export const login = (email, password) => {} // TODO
+
+// export const logout = () => {} // TODO

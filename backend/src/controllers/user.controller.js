@@ -1,4 +1,4 @@
-import runQuery from '../config/database.js';
+import { runQuery } from '../config/database.js';
 import { verify } from '../config/session.js';
 import { createHash } from '../config/hash.js';
 // import QueryBuilder from '../config/query.js';

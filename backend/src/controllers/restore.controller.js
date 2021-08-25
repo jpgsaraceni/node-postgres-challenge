@@ -1,4 +1,4 @@
-import runQuery from '../config/database.js';
+import { runQuery } from '../config/database.js';
 import { verify } from '../config/session.js';
 
 export const restore = (req, res) => {
@@ -6,7 +6,7 @@ export const restore = (req, res) => {
   const { category } = req.params;
   const { id } = req.body;
 
-  if (/\s/g.test(req.body.table)) {
+  if (/\s/g.test(category)) {
     res.sendStatus(418);
     return false;
   }
