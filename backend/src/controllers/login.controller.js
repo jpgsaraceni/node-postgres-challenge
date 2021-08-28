@@ -11,7 +11,7 @@ export const login = (req, res) => {
 
   runQuery(query, [email])
     .then(result => {
-      if (result === undefined) { // no matching email in DB
+      if (result.length == 0) { // no matching email in DB
         res.sendStatus(401);
         return false;
 
@@ -30,5 +30,8 @@ export const login = (req, res) => {
           };
         });
       };
-    }).catch(err => res.sendStatus(500));
+    }).catch(err => {
+      res.sendStatus(500)
+      console.log(err)
+    });
 }
