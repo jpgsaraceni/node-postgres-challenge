@@ -17,36 +17,49 @@ function LogIn() {
     const [noEmail, setNoEmail] = useState(false);
     const [noPassword, setNoPassword] = useState(false);
     const [showInvalidUserMessage, setShowInvalidUserMessage] = useState(false);
+    const [wait, setWait] = useState(false);
 
     // sets logged user to provider.
     // const { setUser } = useContext(UserContext);
     const history = useHistory();
 
-    const navigateToHome = useCallback(() => {
+    api.interceptors.request.use((config) => {
+      setWait(true)
+      return config;
+    });
+
+    function handleSubmit(event) {
+      event.preventDefault();
+      login();
+    }
+
+    const login = useCallback(() => {
+      if (!email) {
+        setNoEmail(true);
+        return false;
+      } 
+      if (!password) {
+        setNoPassword(true);
+        return false;
+      } 
       setShowInvalidUserMessage(false);
-        api.post('/login', { email, password })
-          .then(response => {
-          if (response.status === 200) {
-            history.push(`/home`);
-          }}).catch(() => {
-            if (!email) {
-              setNoEmail(true);
-              return false;
-            } 
-            if (!password) {
-              setNoPassword(true);
-              return false;
-            } 
-            setShowInvalidUserMessage(true);
-          })
-    }, [email, password, history])
+      api.post('/login', { email, password })
+        .then(response => {
+        if (response.status === 200) {
+          history.push(`/home`);
+        }}).catch(() => {
+          setShowInvalidUserMessage(true);
+          setWait(false)
+        // }).finally(() => {
+        });
+    }, [email, password, history]);
 
     function navigateToSignUp() {
-        history.push(`signup`);
+        // history.push(`signup`);
     }
 
     function navigateToRecoverPassword() {
-        history.push(`recover`);
+        // history.push(`recover`);
     }
 
     return (
@@ -61,10 +74,11 @@ function LogIn() {
               </figure>
             </div>
             <div className="right-side">
-                <form>
-                    <h1>Já possui cadastro?</h1>
+                <form onSubmit={handleSubmit}>
+                    <h1>Gestão de compras</h1>
                     <input
-                        type="e-mail"
+                        type="email"
+                        autoComplete="username"
                         placeholder="Digite seu e-mail"
                         onChange={event => {
                             setNoEmail(false);
@@ -73,7 +87,7 @@ function LogIn() {
                         }}
                     />
                     {noEmail && <span>Informe seu e-mail!</span>}
-                    <input type="password" placeholder="Digite sua senha" onChange={event => {
+                    <input type="password" autoComplete="password" placeholder="Digite sua senha" onChange={event => {
                         setNoPassword(false);
                         setShowInvalidUserMessage(false);
                         setPassword(event.target.value)
@@ -93,18 +107,19 @@ function LogIn() {
                     </p>
                     <button
                         className="enter-btn"
-                        type="button"
-                        onClick={() => navigateToHome()}
+                        type="submit"
+                        // onClick={() => navigateToHome()}
+                        disabled={wait?true:false}
                     >
                         Entrar
                     </button>
                 </form>
-                <p className="sign-up-caption">
+                {/* <p className="sign-up-caption">
                     É novo aqui?
                     <button className="sign-up-btn" type="button" onClick={() => navigateToSignUp()}>
                         Cadastre-se!
                     </button>
-                </p>
+                </p> */}
             </div>
         </Container>
     );

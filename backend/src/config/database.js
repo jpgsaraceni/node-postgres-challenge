@@ -4,7 +4,6 @@ import pkg from 'pg';
 dotenv.config();
 const poolConfig = JSON.parse(process.env.POOL_CONFIG);
 const { Pool } = pkg;
-const { Client } = pkg;
 
 const pool = new Pool(poolConfig);
 
@@ -20,9 +19,11 @@ pool.on('connect', () => {
 export const runQuery = (query, values) => {
   return new Promise((resolve, reject) => {
     pool.connect()
-      .then((client) => client.query(query, values)
+      .then((client) => client
+        .query(query, values)
         .then(result => resolve(result.rows))
-        .catch((err) => reject(err)))
+        .catch((err) => reject(err))
+        .finally(() => client.release()))
       .catch((err) => reject(err));
   })
 }

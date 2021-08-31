@@ -12,7 +12,7 @@ import restoreRoute from './routes/restore.routes.js';
 import purchaseRoute from './routes/purchase.routes.js';
 import purchaseItemsRoute from './routes/purchaseItems.routes.js';
 import payablesRoute from './routes/payables.routes.js';
-//import logoutRoute from './routes/logout.routes.js';
+import logoutRoute from './routes/logout.routes.js';
 
 const app = express();
 app.use(express.urlencoded({ extended: true }));
@@ -28,6 +28,7 @@ app.use(cors(corsOptions));
 
 app.use(index);
 app.use('/login', loginRoute);
+app.use('/logout', logoutRoute);
 app.use('/products', productRoute);
 app.use('/product_groups', productGroupRoute);
 app.use('/suppliers', supplierRoute);
@@ -36,6 +37,5 @@ app.use('/restore', restoreRoute);
 app.use('/purchases', purchaseRoute);
 app.use('/purchase_items', purchaseItemsRoute);
 app.use('/payables', payablesRoute);
-//app.use('/logout', logoutRoute);
 
 export default app;

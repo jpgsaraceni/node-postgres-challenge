@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
-export const Container = styled.div`
-    padding: 5vh 0;
+export const Container = styled.main`
+    margin: 5vh 5vw;
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;

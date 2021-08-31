@@ -17,6 +17,14 @@ export const Container = styled.div`
         color: #ffb32b;
     }
 
+    button:disabled {
+      color: none;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+    }
+
     .left-side {
         width: 40%;
         display: flex;
@@ -74,5 +82,10 @@ export const Container = styled.div`
 
     span {
         color: red;
+    }
+
+    // ANCHOR
+    .sign-up-btn, .forgot-password-btn {
+      cursor: not-allowed;
     }
 `;

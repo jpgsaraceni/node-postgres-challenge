@@ -5,62 +5,95 @@ import { Container } from './styles';
 
 import logo from '../../assets/images/logo.svg';
 import logout from '../../assets/images/logout.svg';
+import api from '../../services/api';
+import ModalComponent from '../Modal';
 
 function Header() {
     // header with logo and navigation buttons. Rendered in all pages after login.
     const history = useHistory();
 
-    function navigateToHome() {
-        history.push(`/home`);
-    }
+    // function navigateToHome() {
+    //     history.push(`/home`);
+    // }
 
     function navigateToLogIn() {
-        history.push(`/login`);
+      api.post('/logout')
+      .then(response => {
+        if (response.status === 200) {
+          history.push(`/login`);
+        }
+    }).catch(err => console.log(err));
+    }
+
+    function navigateToPurchases() {
+      history.push('/purchases');
     }
 
     return (
         <Container>
-            <div className="right">
-                <button
+            <div className="top">
+                {/* <button
                     type="button"
                     className="right home-button"
-                    onClick={() => navigateToHome()}
-                >
+                    // onClick={() => navigateToHome()}
+                    disabled="true"
+                > */}
                     <img
                         className="logo"
                         src={logo}
                         alt="Logo da AlphaDB. Ícone que representa bancos de dados (cilindro com circunferências paralelas às bases marcadas na superfície)."
                     />
-                </button>
+                {/* </button> */}
             </div>
-            <div className="left">
+            <div className="main-navigation">
                 <button
                     type="button"
-                    className="navigate-button"
-                    onClick={() => {}}
+                    className="navigate-btn purchases-btn"
+                    onClick={() => navigateToPurchases()}
                 >
-                    Lançar Compra
+                    Compras
                 </button>
                 <button
                     type="button"
-                    className="navigate-button"
+                    className="navigate-btn"
                     onClick={() => {}}
                 >
-                    Ver Contas a Pagar
+                    Contas a Pagar
                 </button>
                 <button
                     type="button"
-                    className="navigate-button"
-                    onClick={() => navigateToLogIn()}
+                    className="navigate-btn"
+                    onClick={() => {}}
                 >
+                    Fornecedores
+                </button>
+                <button
+                    type="button"
+                    className="navigate-btn"
+                    onClick={() => {}}
+                >
+                    Produtos
+                </button>
+              </div>
+              <div className="bottom">
+                <ModalComponent 
+                  button={
+                  <button
+                    type="button"
+                    className="logout-btn"
+                    // onClick={() => navigateToLogIn()}
+                  >
                     <img
-                        className="logout-button"
+                        className="logout-icon"
                         src={logout}
                         alt="Log out icon"
                     />
                     Sair
-                </button>
-            </div>
+                  </button>}
+                  title="Deseja mesmo sair?" 
+                  confirm={() => navigateToLogIn()}
+                />
+              </div>
         </Container>
     );
 }

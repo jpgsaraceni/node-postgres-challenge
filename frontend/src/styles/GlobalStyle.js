@@ -6,7 +6,7 @@ export default createGlobalStyle`
         padding: 0;
         box-sizing: border-box;
         outline: none;
-        font-family: 'Ubuntu';
+        font-family: 'Ubuntu', sans-serif;
     }
 
     body {
@@ -54,7 +54,7 @@ export default createGlobalStyle`
         width: 68%;
         height: 86px;
         padding-left: 20px;
-        font-size: 30px;
+        font-size: 26px;
         background: inherit;
         border: 1px solid #b2d6ff;
         box-sizing: border-box;
@@ -65,7 +65,7 @@ export default createGlobalStyle`
     }
 
     input::placeholder {
-        font-size: 30px;
+        font-size: 26px;
         color: #b2d6ff;
     }
 
@@ -87,5 +87,10 @@ export default createGlobalStyle`
         width: 100%;
         display: flex;
         place-content: center;
+    }
+    
+    main {
+      overflow: auto;
+      width: 100%;
     }
 `;

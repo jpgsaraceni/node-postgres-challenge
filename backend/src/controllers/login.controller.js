@@ -3,6 +3,7 @@ import { sign } from '../config/session.js';
 import { compare } from '../config/hash.js';
 
 export const login = (req, res) => {
+  console.log("requisição")
   const { email, password: reqPassword } = req.body;
 
   const query = 'SELECT id, name, password'
@@ -28,7 +29,7 @@ export const login = (req, res) => {
           } else {
             res.sendStatus(401); // passwords don't match
           };
-        });
+        }).catch(() => res.sendStatus(500));
       };
     }).catch(err => {
       res.sendStatus(500)

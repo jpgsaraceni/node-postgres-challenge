@@ -1,13 +1,13 @@
 /* eslint-disable react/destructuring-assignment */
 import React from 'react';
-import { UserProvider } from './UserProvider';
+import { PurchasesProvider } from './PurchasesProvider';
 
 function AppProvider(props) {
     // nests all the providers in the app.
     return (
-        <UserProvider>
+        <PurchasesProvider>
           {props.children}
-        </UserProvider>
+        </PurchasesProvider>
     );
 }
 
