@@ -6,7 +6,7 @@ import { Container } from './styles';
 import logo from '../../assets/images/logo.svg';
 import logout from '../../assets/images/logout.svg';
 import api from '../../services/api';
-import ModalComponent from '../Modal';
+import {LogoutModal} from '../Modal';
 
 function Header() {
     // header with logo and navigation buttons. Rendered in all pages after login.
@@ -76,7 +76,7 @@ function Header() {
                 </button>
               </div>
               <div className="bottom">
-                <ModalComponent 
+                <LogoutModal 
                   button={
                   <button
                     type="button"

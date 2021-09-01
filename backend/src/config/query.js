@@ -146,6 +146,26 @@ export const insertWithTransaction = async (table, ...queryObjects) => {
   return await runTransaction(primaryQuery, primaryValues, secondaryQueries, secondaryValues);
 }
 
+export const selectFiltered = (table, ...filterParams) => {
+  return new Promise((resolve, reject) => {
+    const queryArray = [...filterParams];
+    let where = 'WHERE '
+
+    queryArray.forEach((object, i) => {
+      const key = Object.keys(object);
+      const value = Object.values(object);
+      const pair = `${key}=${value}`
+      i == 0 ? where += pair : where += `AND ${pair}`;
+    })
+
+    const query = `SELECT * FROM ${table} ${where}`
+
+    runQuery(query)
+      .then(result => resolve(result))
+      .catch(err => reject(err));
+  })
+}
+
 // TODO update and delete for connected tables (with transactions)
 
 // export const login = (email, password) => {} // TODO

@@ -14,7 +14,7 @@ export default createGlobalStyle`
         color: #333333;
     }
 
-    body, input, button {
+    body, input, button, select {
         font: 400 16px sans-serif;
     }
 
@@ -49,7 +49,7 @@ export default createGlobalStyle`
         color: #1f8fff;
     }
 
-    input {
+    input, select {
         display: flex;
         width: 68%;
         height: 86px;

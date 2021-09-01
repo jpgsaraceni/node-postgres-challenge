@@ -1,7 +1,23 @@
-import { deleteQuery, select, update } from '../config/query.js';
+import { deleteQuery, select, selectFiltered, update } from '../config/query.js';
+import { verify } from '../config/session.js';
 
 export const readPurchaseItems = (req, res) => {
-  select(req, res, 'purchase_items');
+  const { token } = req.cookies;
+  const { purchase_id } = req.body;
+
+
+  if (/\s/g.test(purchase_id)) {
+    res.sendStatus(418);
+    return false;
+  }
+
+  verify(token).then(() => {
+    selectFiltered('purchase_items', { purchase_id })
+      .then(result => res.send(result))
+      .catch(() => res.sendStatus(500));
+  }).catch(() => {
+    res.sendStatus(401)
+  });
 }
 
 export const updatePurchaseItems = (req, res) => {

@@ -4,6 +4,9 @@ import { PurchasesContext } from '../../providers/PurchasesProvider';
 
 import PurchaseLine from '../../components/PurchaseLine';
 import { Container } from './styles';
+import {FormModal} from '../Modal';
+import AddPurchase from '../AddPurchase';
+import api from '../../services/api';
 
 function PurchasesMain() {
     const {purchases, getPurchases} = useContext(PurchasesContext);
@@ -11,7 +14,14 @@ function PurchasesMain() {
     return (
         <Container>
           <div className="btn-container">
-            <button>Nova compra</button>
+                <FormModal 
+                  button={
+                    <button type="button">
+                      Nova compra
+                    </button>}
+                  component={<AddPurchase />}
+                  confirm={() => {}}
+                />
           </div>
             {
             purchases 

@@ -10,9 +10,19 @@ export const Container = styled.div`
   justify-content: space-between;
   flex-wrap: wrap;
   
+  .info {
+    display: flex;
+    flex-wrap: wrap;
+    height: 100px;
+  }
+
   p {
     font-size: 18px;
     margin: 10px;
+  }
+
+  span {
+    font-weight: bolder;
   }
 
   .actions {
@@ -20,6 +30,6 @@ export const Container = styled.div`
       margin: 10px;
     }
     display: flex;
-    flex-direction: column;
+    /* flex-direction: column; */
   }
 `;
