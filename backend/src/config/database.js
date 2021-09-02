@@ -38,6 +38,31 @@ export const runTransaction = async (primaryQuery, primaryValues, secondaryQueri
     await secondaryQueries.forEach((secondaryQuery, i) => {
       client.query(secondaryQuery, [...secondaryValues[i], res.rows[0].id]).then((result) => {
         queryStatus.push(result.rows);
+      }).catch(err => {
+        console.log(err)
+        queryStatus = false
+      });
+    })
+    await client.query('COMMIT')
+  } catch (e) {
+    queryStatus = false;
+    await client.query('ROLLBACK')
+    throw e
+  } finally {
+    client.release()
+    return queryStatus;
+  }
+};
+
+export const runSoftDeleteTransaction = async (primaryQuery, primaryValues, secondaryQueries, secondaryValues) => {
+  const client = await pool.connect()
+  let queryStatus = [];
+  try {
+    await client.query('BEGIN');
+    await client.query(primaryQuery, primaryValues);
+    await secondaryQueries.forEach((secondaryQuery, i) => {
+      client.query(secondaryQuery, [...secondaryValues[i]]).then((result) => {
+        queryStatus.push(result.rows);
       });
     })
     await client.query('COMMIT')

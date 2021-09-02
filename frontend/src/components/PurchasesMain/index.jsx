@@ -1,15 +1,23 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 import { PurchasesContext } from '../../providers/PurchasesProvider';
 
 import PurchaseLine from '../../components/PurchaseLine';
 import { Container } from './styles';
-import {FormModal} from '../Modal';
+import { FormModal } from '../Modal';
 import AddPurchase from '../AddPurchase';
-import api from '../../services/api';
 
 function PurchasesMain() {
     const {purchases, getPurchases} = useContext(PurchasesContext);
+    const [update, setUpdate] = useState(false)
+
+    function childCallback() {
+      setUpdate(!update)
+    }
+
+    useEffect(() => {
+      getPurchases()
+    }, [update])
 
     return (
         <Container>
@@ -19,16 +27,15 @@ function PurchasesMain() {
                     <button type="button">
                       Nova compra
                     </button>}
-                  component={<AddPurchase />}
-                  confirm={() => {}}
+                  component={<AddPurchase callback={childCallback} />}
                 />
           </div>
             {
-            purchases 
-              ? purchases.map(purchase => 
-                <PurchaseLine purchase={purchase} key={purchase.id} />
-              ):
-              getPurchases()
+            purchases ?
+              purchases.map(purchase => 
+                <PurchaseLine purchase={purchase} key={purchase.id} callback={childCallback} />
+              )
+              : getPurchases()
             }    
         </Container>
     );

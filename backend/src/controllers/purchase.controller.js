@@ -1,8 +1,17 @@
-import { deleteQuery, select, update, insertWithTransaction } from '../config/query.js';
+import { deleteQuery, select, update, insertWithTransaction, deleteWithTransaction, selectFiltered } from '../config/query.js';
 import { verify } from '../config/session.js';
 
 export const createPurchases = async (req, res) => {
   const { token } = req.cookies;
+
+
+  const { id: create_user_id } = await verify(token);
+
+  if (!create_user_id) {
+    res.sendStatus(401)
+    return false
+  }
+
   const {
     supplier_id,
     total_price,
@@ -16,8 +25,6 @@ export const createPurchases = async (req, res) => {
     payment_number,
   } = req.body;
   const keys = Object.keys(req.body);
-
-  const { id: create_user_id } = await verify(token);
 
   if (/\s/g.test(keys)) {
     res.sendStatus(418);
@@ -58,7 +65,16 @@ export const createPurchases = async (req, res) => {
 
 // TODO refactor other methods for purchases
 
-export const readPurchases = (req, res) => {
+export const readPurchases = async (req, res) => {
+  // const { token } = req.cookies;
+  // const { id: create_user_id } = await verify(token);
+
+  // if (!create_user_id) {
+  //   res.sendStatus(401)
+  //   return false
+  // }
+
+  // selectReturningId('purchases');
   select(req, res, 'purchases');
 }
 
@@ -66,6 +82,14 @@ export const updatePurchases = (req, res) => {
   update(req, res, 'purchases');
 }
 
-export const deletePurchases = (req, res) => {
-  deleteQuery(req, res, 'purchases');
+export const deletePurchases = async (req, res) => {
+  const { token } = req.cookies;
+  const {
+    id
+  } = req.body;
+
+  const { id: userId } = await verify(token);
+
+  const transaction = await deleteWithTransaction(id, userId, "purchases", "purchase_items", "payables");
+  transaction ? res.status(200).send(transaction) : res.sendStatus(404);
 }

@@ -146,4 +146,84 @@ export function FormModal(props) {
       </Modal>
     </div>
   );
+};
+
+export function DeleteModal(props) {
+   // react-modal
+
+   const customStyles = {
+    content: {
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+      height: '30vh',
+      width: '30vw',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-around',
+    },
+  };
+
+  const [modalIsOpen, setIsOpen] = React.useState(false);
+
+  function openModal() {
+    setIsOpen(true);
+  }
+
+  function closeModal() {
+    setIsOpen(false);
+  }
+
+  return (
+    <div onClick={!modalIsOpen? openModal: undefined}>
+      {props.button}
+      <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeModal}
+        style={customStyles}
+        contentLabel="modal de deleção"
+      >
+        <h2
+          style={{
+            color: '#1f8fff',
+            textAlign: 'center'
+          }}
+        >
+          {props.title}
+        </h2>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-around'
+          }}
+        >
+          <button
+          onClick={() => {
+            props.confirm(closeModal())
+          }}
+          style={{
+            color: 'red',
+            fontSize: '30px',
+            fontWeight: 'bold',
+            background: 'none',
+          }}
+          >
+            Deletar
+          </button>
+          <button
+            onClick={closeModal}
+            style={{
+              fontSize: '30px',
+              background: 'none',
+            }}
+          >
+            Cancelar
+          </button>
+        </div>
+      </Modal>
+    </div>
+  );
 }

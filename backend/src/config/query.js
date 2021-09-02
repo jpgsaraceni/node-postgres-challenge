@@ -1,4 +1,4 @@
-import { runQuery, runTransaction } from '../config/database.js';
+import { runQuery, runSoftDeleteTransaction, runTransaction } from '../config/database.js';
 import { verify } from '../config/session.js';
 
 // FIXME treat the req.body object in the controllers, not here
@@ -146,6 +146,31 @@ export const insertWithTransaction = async (table, ...queryObjects) => {
   return await runTransaction(primaryQuery, primaryValues, secondaryQueries, secondaryValues);
 }
 
+export const deleteWithTransaction = async (mainTableId, userId, ...tables) => {
+
+  const primaryValues = [mainTableId, userId]
+  const primaryTable = tables[0]
+
+  const secondaryQueries = [];
+  const secondaryValues = [];
+
+  tables.forEach(table => {
+    secondaryQueries.push(`UPDATE ${table}`
+      + ' SET'
+      + ' deleted=true,'
+      + ' update_date=NOW(),'
+      + ' update_user_id=$2'
+      + ' WHERE'
+      + ` ${table == primaryTable ? 'id' : primaryTable.slice(0, -1) + '_id'} = $1 RETURNING *`
+    )
+    secondaryValues.push(primaryValues)
+  })
+
+  const primaryQuery = secondaryQueries.shift();
+
+  return await runSoftDeleteTransaction(primaryQuery, primaryValues, secondaryQueries, secondaryValues);
+}
+
 export const selectFiltered = (table, ...filterParams) => {
   return new Promise((resolve, reject) => {
     const queryArray = [...filterParams];
@@ -164,6 +189,10 @@ export const selectFiltered = (table, ...filterParams) => {
       .then(result => resolve(result))
       .catch(err => reject(err));
   })
+}
+
+export const seletReturningId = (table) => {
+
 }
 
 // TODO update and delete for connected tables (with transactions)

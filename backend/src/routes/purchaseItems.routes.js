@@ -3,7 +3,7 @@ import { deletePurchaseItems, readPurchaseItems, updatePurchaseItems } from '../
 
 const router = Router();
 
-router.get('/', readPurchaseItems);
+router.get('/:id', readPurchaseItems);
 router.put('/', updatePurchaseItems);
 router.delete('/', deletePurchaseItems);
 

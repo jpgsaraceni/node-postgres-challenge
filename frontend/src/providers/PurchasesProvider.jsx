@@ -9,12 +9,16 @@ export const PurchasesProvider = (props) => {
   const [payables, setPayables] = useState();
 
   const getPurchases = () => {
-    api.get('/purchases').then((response) => setPurchases(response.data))
+    api.get('/purchases')
+      .then((response) => setPurchases(response.data))
+      .catch((error) => console.log(error))
   }
 
-  const getPurchaseItems = () => {
-    api.get('/purchase_items')
-  }
+  // const getPurchaseItems = (purchaseId) => {
+  //   api.get(`/purchase_items/${purchaseId}`)
+  //     .then((response) => { return response.data })
+  //     .catch((error) => console.log(error))
+  // }
 
   const createPurchase = (body) => {
     return new Promise((resolve, reject) => {
@@ -24,7 +28,7 @@ export const PurchasesProvider = (props) => {
         "supplier_id":body.supplier_id,
         "total_price":100, 
         "number_of_payments":body.number_of_payments, 
-        "product_id":body.product_id, 
+        "product_id":2, 
         "amount":body.amount, 
         "unit_price":20, 
         "payment_price":100, 
@@ -41,9 +45,20 @@ export const PurchasesProvider = (props) => {
 
   }
 
+  const deletePurchase = (id) => {
+    api.delete('/purchases', {data: {id: id}}).then(response => {return true}).catch(err => { return false })
+  }
+
     return (
-        <PurchasesContext.Provider value={{purchases, getPurchases, createPurchase}} >
-            {props.children}
+        <PurchasesContext.Provider value={{
+          purchases,
+          purchaseItems,
+          getPurchases, 
+          createPurchase, 
+          deletePurchase,
+          // getPurchaseItems,
+        }} >
+          {props.children}
         </PurchasesContext.Provider>
     );
 };

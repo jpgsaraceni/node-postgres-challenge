@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
+import { PurchasesContext } from '../../providers/PurchasesProvider';
+import { DeleteModal } from '../Modal';
 
 import { Container } from './styles';
 
-function PurchaseLine({purchase}) {
+function PurchaseLine({purchase, callback}) {
+  const {deletePurchase} = useContext(PurchasesContext);
+
   const {create_date, total_price, number_of_payments} = purchase;
   const date = new Date(create_date).toLocaleDateString();
+
+  const confirmDelete = async () => {
+    await deletePurchase(purchase.id)
+    callback()
+  }
 
     return (
         <Container>
@@ -16,7 +25,12 @@ function PurchaseLine({purchase}) {
           <div className="actions">
             <button>Detalhes</button>
             <button>Parcelas</button>
-            <button>Deletar</button>
+            <DeleteModal
+              button={<button>Deletar</button>}
+              confirm={confirmDelete}
+              title={'Tem certeza que deseja deletar essa compra? As contas a pagar vinculadas também serão apagadas.'}
+            >
+            </DeleteModal>
           </div>
         </Container>
     );

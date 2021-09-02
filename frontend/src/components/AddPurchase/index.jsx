@@ -5,7 +5,7 @@ import { FormModal } from '../Modal';
 import { Container } from './styles';
 
 
-function AddPurchase() {
+function AddPurchase(props) {
   const {createPurchase} = useContext(PurchasesContext);
   
   const [supplier, setSupplier] = useState(1)
@@ -26,8 +26,8 @@ function AddPurchase() {
               <option value="1">1 Parcela</option>
             </select>
             <select defaultValue={product} onChange={event => setProduct(event.target.value)}>
-              <option value="1" disabled hidden>Produto</option>
-              <option value="1">Produto Padrão</option>
+              <option value="2" disabled hidden>Produto</option>
+              <option value="2">Produto Padrão</option>
             </select>
             <div className="amount-input-container">
               Quantidade:
@@ -41,8 +41,8 @@ function AddPurchase() {
                 product_id: product, 
                 amount: amount
               }).then(() => {
-                console.log("ok")
                 setAdded(true)
+                props.callback()
               }).catch((e) => console.log(e))
             }}>Adicionar</button>}
         </Container>

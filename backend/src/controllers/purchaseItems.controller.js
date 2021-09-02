@@ -2,8 +2,9 @@ import { deleteQuery, select, selectFiltered, update } from '../config/query.js'
 import { verify } from '../config/session.js';
 
 export const readPurchaseItems = (req, res) => {
+  console.log(req.params)
   const { token } = req.cookies;
-  const { purchase_id } = req.body;
+  const { id: purchase_id } = req.params;
 
 
   if (/\s/g.test(purchase_id)) {
