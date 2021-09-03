@@ -191,7 +191,7 @@ export const selectFiltered = (table, ...filterParams) => {
   })
 }
 
-export const seletReturningId = (table) => {
+export const seletRefactored = (table) => {
 
 }
 

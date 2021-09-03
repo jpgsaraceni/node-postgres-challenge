@@ -3,7 +3,6 @@ import { sign } from '../config/session.js';
 import { compare } from '../config/hash.js';
 
 export const login = (req, res) => {
-  console.log("requisição")
   const { email, password: reqPassword } = req.body;
 
   const query = 'SELECT id, name, password'

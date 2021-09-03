@@ -8,8 +8,10 @@ import { FormModal } from '../Modal';
 import AddPurchase from '../AddPurchase';
 
 function PurchasesMain() {
-    const {purchases, getPurchases} = useContext(PurchasesContext);
+    const {purchases, getPurchases, getAll} = useContext(PurchasesContext);
     const [update, setUpdate] = useState(false)
+    const [suppliers, setSuppliers] = useState({})
+    const [products, setProducts] = useState({})
 
     function childCallback() {
       setUpdate(!update)
@@ -17,6 +19,8 @@ function PurchasesMain() {
 
     useEffect(() => {
       getPurchases()
+      getAll('suppliers').then(result => setSuppliers(result.data))
+      getAll('products').then(result => setProducts(result.data))
     }, [update])
 
     return (
@@ -27,7 +31,13 @@ function PurchasesMain() {
                     <button type="button">
                       Nova compra
                     </button>}
-                  component={<AddPurchase callback={childCallback} />}
+                  component={
+                    <AddPurchase 
+                      callback={childCallback} 
+                      suppliers={suppliers ? suppliers : ''} 
+                      products={products ? products : ''}
+                    />
+                  }
                 />
           </div>
             {

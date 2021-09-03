@@ -1,19 +1,49 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { PurchasesContext } from '../../providers/PurchasesProvider';
-import { DeleteModal } from '../Modal';
+import { DeleteModal, DetailsModal } from '../Modal';
 
 import { Container } from './styles';
 
 function PurchaseLine({purchase, callback}) {
-  const {deletePurchase} = useContext(PurchasesContext);
 
-  const {create_date, total_price, number_of_payments} = purchase;
+  const {deletePurchase, purchaseDetails, productDetails, getDetails} = useContext(PurchasesContext);
+
+  const {create_date, total_price, number_of_payments, supplier_id} = purchase;
   const date = new Date(create_date).toLocaleDateString();
+
+  const [items, setItems] = useState({});
+  const [payables, setPayables] = useState();
+  const [products, setProducts] = useState({})
+  const [supplier, setSupplier] = useState({})
 
   const confirmDelete = async () => {
     await deletePurchase(purchase.id)
     callback()
   }
+
+  useEffect(() => {
+    purchaseDetails(purchase.id).then(result => {
+      setItems(result.data.items[0])
+
+      productDetails(result.data.items[0].product_id)
+        .then(result => {
+          setProducts(result.data.product[0]);
+      })
+        .catch(e => console.log(e))
+    })
+    .catch(e => console.log(e))
+
+    getDetails('suppliers',supplier_id)
+      .then(result => {
+        setSupplier(result.data.supplier[0])
+    })
+      .catch(e => console.log(e))
+
+    getDetails('payables', purchase.id)
+      .then(result => {
+        setPayables(result.data.payable[0])
+    })
+  }, [])
 
     return (
         <Container>
@@ -23,8 +53,14 @@ function PurchaseLine({purchase, callback}) {
             <p>Número de parcelas: <span>{number_of_payments}</span></p>
           </div>
           <div className="actions">
-            <button>Detalhes</button>
-            <button>Parcelas</button>
+            <DetailsModal 
+              button={<button>Detalhes</button>}
+              title='Detalhes'
+              items={items}
+              payables={payables}
+              products={products}
+              supplier={supplier}
+            />
             <DeleteModal
               button={<button>Deletar</button>}
               confirm={confirmDelete}

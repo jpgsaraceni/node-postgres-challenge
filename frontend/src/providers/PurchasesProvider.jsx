@@ -14,24 +14,41 @@ export const PurchasesProvider = (props) => {
       .catch((error) => console.log(error))
   }
 
-  // const getPurchaseItems = (purchaseId) => {
-  //   api.get(`/purchase_items/${purchaseId}`)
-  //     .then((response) => { return response.data })
-  //     .catch((error) => console.log(error))
-  // }
+  const getAll = async (table) => {
+    const result = await api.get(`/${table}`)
+    return result
+  }
+
+  const purchaseDetails = async (purchaseId) => {
+    const result = await api.get(`/purchases/${purchaseId}`)
+    return result
+  }
+
+  const productDetails = async (id) => {
+    const result = await api.get(`/products/${id}`)
+    return result
+  }
+
+  const getDetails = async (table, id) => {
+    const result = await api.get(`/${table}/${id}`)
+    return result
+  }
 
   const createPurchase = (body) => {
     return new Promise((resolve, reject) => {
+    
+    const totalPrice = body.amount*body.unitPrice
+
     api.post(
       '/purchases',
       {
         "supplier_id":body.supplier_id,
-        "total_price":100, 
+        "total_price": totalPrice, 
         "number_of_payments":body.number_of_payments, 
-        "product_id":2, 
+        "product_id": body.product_id, 
         "amount":body.amount, 
-        "unit_price":20, 
-        "payment_price":100, 
+        "unit_price": body.unitPrice, 
+        "payment_price": body.unitPrice, 
         "due_date": "2021-09-21", 
         "purchase_date": "NOW()", 
         "payment_number": 1
@@ -53,9 +70,14 @@ export const PurchasesProvider = (props) => {
         <PurchasesContext.Provider value={{
           purchases,
           purchaseItems,
+          payables,
           getPurchases, 
           createPurchase, 
           deletePurchase,
+          purchaseDetails,
+          productDetails,
+          getDetails,
+          getAll,
           // getPurchaseItems,
         }} >
           {props.children}

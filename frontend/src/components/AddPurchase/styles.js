@@ -7,15 +7,16 @@ export const Container = styled.div`
   flex-wrap: wrap;
   margin: 20px 0;
 
-  input, select, .amount-input-container {
+  input, select, .amount-input-container, .price-input-container {
     padding: 4px 10px;
     height: fit-content;
-    width: fit-content;
+    width: max-content;
   }
 
-  .amount-input-container {
+  .amount-input-container, .price-input-container {
     display: flex;
-    width: min-content;
+    min-width: max-content;
+    width: 100%;
     padding: 5px 14px;
     font-size: 26px;
     background: inherit;
@@ -24,11 +25,11 @@ export const Container = styled.div`
     margin-top: 10px;
   }
 
-  .amount-input {
+  .amount-input, .price-input {
     margin: 0;
     padding: 0px 10px;
     border: none;
-    width: min-content;
+    width: 100px;
   }
 
   select {
@@ -62,5 +63,12 @@ export const Container = styled.div`
     width: 100%;
     text-align: center;
     margin: 20px;
+  }
+
+  .missing-field {
+    width: 100%;
+    text-align: center;
+    color: red;
+    margin-top: 5px;
   }
 `;
