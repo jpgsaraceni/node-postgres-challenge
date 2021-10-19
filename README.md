@@ -19,7 +19,7 @@ I had to downsize the project a (big) bit to meet the deadline.
 4. Document use of PostgreSQL
 
 # Run this app
-1. On project root, run (back-end dependencies):
+1. On project root, install back-end dependencies:
 
 ```shell
 npm install
@@ -31,7 +31,7 @@ npm install
 npm start
 ```
 
-3. Enter frontend and run (react dependencies):
+3. Enter `/frontend` directory and install react dependencies:
 
 ```shell
 npm install
