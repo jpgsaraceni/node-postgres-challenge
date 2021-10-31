@@ -18,6 +18,7 @@ export const sign = (id) => {
 export const verify = (token) => {
   return new Promise((resolve, reject) => {
     jwt.verify(token, secret, (err, decoded) => {
+      console.log(err);
       if (err) reject(err);
       if (decoded) resolve(decoded);
     })

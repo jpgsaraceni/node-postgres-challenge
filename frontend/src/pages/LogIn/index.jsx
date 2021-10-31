@@ -1,10 +1,10 @@
 import React, { useCallback, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import {setUser} from '../../services/auth'
+import { setUser } from '../../services/auth'
 // import { useContext } from 'react';
 // import { UserContext } from '../providers/UserProvider';
 import { Container } from './styles';
-import api from '../../services/api';
+import api, { setToken } from '../../services/api';
 
 import logo from '../../assets/images/logo.svg';
 
@@ -24,34 +24,35 @@ function LogIn() {
     const history = useHistory();
 
     api.interceptors.request.use((config) => {
-      setWait(true)
-      return config;
+        setWait(true)
+        return config;
     });
 
     function handleSubmit(event) {
-      event.preventDefault();
-      login();
+        event.preventDefault();
+        login();
     }
 
     const login = useCallback(() => {
-      if (!email) {
-        setNoEmail(true);
-        return false;
-      } 
-      if (!password) {
-        setNoPassword(true);
-        return false;
-      } 
-      setShowInvalidUserMessage(false);
-      api.post('/login', { email, password })
-        .then(response => {
-        if (response.status === 200) {
-          history.push(`/home`);
-        }}).catch(() => {
-          setShowInvalidUserMessage(true);
-          setWait(false)
-        // }).finally(() => {
-        });
+        if (!email) {
+            setNoEmail(true);
+            return false;
+        }
+        if (!password) {
+            setNoPassword(true);
+            return false;
+        }
+        setShowInvalidUserMessage(false);
+        api.post('/login', { email, password })
+            .then(response => {
+                if (response.status === 200) {
+                    setToken(response.data);
+                    history.push(`/home`);
+                }
+            }).catch(() => {
+                setShowInvalidUserMessage(true);
+                setWait(false)
+            });
     }, [email, password, history]);
 
     function navigateToSignUp() {
@@ -65,13 +66,13 @@ function LogIn() {
     return (
         <Container>
             <div className="left-side">
-              <figure>
-                <img
-                    className="logo"
-                    src={logo}
-                    alt="Logo da AlphaDB. Ícone que representa bancos de dados (cilindro com circunferências paralelas às bases marcadas na superfície)."
-                />
-              </figure>
+                <figure>
+                    <img
+                        className="logo"
+                        src={logo}
+                        alt="Logo da AlphaDB. Ícone que representa bancos de dados (cilindro com circunferências paralelas às bases marcadas na superfície)."
+                    />
+                </figure>
             </div>
             <div className="right-side">
                 <form onSubmit={handleSubmit}>
@@ -109,7 +110,7 @@ function LogIn() {
                         className="enter-btn"
                         type="submit"
                         // onClick={() => navigateToHome()}
-                        disabled={wait?true:false}
+                        disabled={wait ? true : false}
                     >
                         Entrar
                     </button>
