@@ -1,37 +1,23 @@
-import { runQuery } from '../config/database.js';
-import { sign } from '../config/session.js';
+import { sign } from '../config/token.js';
 import { compare } from '../config/hash.js';
-
+import { selectUser } from '../config/query.js';
+/**
+ * Calls method to retrieve user information from database, compares req.body.password to received
+ * password, then generates JWT to send to client in response body. If the email is not found in DB
+ * or passwords don't match responds with error code 401.
+ * @param {object} req 
+ * @param {object} res 
+ * @returns {string | number} token or error code 401
+ */
 export const login = (req, res) => {
-  const { email, password: reqPassword } = req.body;
-
-  const query = 'SELECT id, name, password'
-    + ' FROM users'
-    + ' WHERE $1 = email AND deleted = false';
-
-  runQuery(query, [email])
-    .then(result => {
-      if (result.length == 0) { // no matching email in DB
-        res.sendStatus(401);
-        return false;
-
-      } else {
-        const { password: dbPassword, name, id } = result[0];
-
-        compare(reqPassword, dbPassword).then(bcryptResult => {
-          if (bcryptResult) {
-            sign(id).then(jwt => {
-              res.cookie('token', jwt);
-              res.status(200).send(`Hello, ${name}!`);
-
-            }).catch(() => res.sendStatus(500));
-          } else {
-            res.sendStatus(401); // passwords don't match
-          };
-        }).catch(() => res.sendStatus(500));
-      };
-    }).catch(err => {
-      res.sendStatus(500)
-      console.log(err)
-    });
+  selectUser(req.body.email)
+    .then((dbResponse) => {
+      compare(req.body.password, dbResponse.password,
+        sign(dbResponse.id))
+        .then(token => {
+          res.send(token)
+        }).catch(() => {
+          res.sendStatus(401)
+        });
+    }).catch(() => res.sendStatus(401));
 }

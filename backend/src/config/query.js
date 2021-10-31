@@ -191,12 +191,25 @@ export const selectFiltered = (table, ...filterParams) => {
   })
 }
 
-export const seletRefactored = (table) => {
+// ANCHOR new query.js file:
+/**
+ * 
+ * @param {string} email 
+ * @returns {Promise<Object>} user information from db
+ */
+export const selectUser = (email) => {
+  return new Promise((resolve, reject) => {
+    const query = 'SELECT id, name, password'
+      + ' FROM users'
+      + ' WHERE $1 = email AND deleted = false';
 
-}
+    const values = [email];
 
-// TODO update and delete for connected tables (with transactions)
-
-// export const login = (email, password) => {} // TODO
-
-// export const logout = () => {} // TODO
+    runQuery(query, values).then(result => {
+      if (result.length == 0) reject(401);
+      resolve(result[0]);
+    }).catch(err => {
+      reject(err)
+    });
+  })
+};

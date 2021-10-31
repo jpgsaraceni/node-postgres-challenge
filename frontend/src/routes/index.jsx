@@ -3,6 +3,7 @@ import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import Home from '../pages/Home';
 import LogIn from '../pages/LogIn';
 import Purchases from '../pages/Purchases';
+import Products from '../pages/Products';
 // import RecoverPassword from '../pages/RecoverPassword';
 // import RedefinePassword from '../pages/RedefinePassword';
 import PublicRoute from '../routes/PublicRoute';
@@ -16,6 +17,7 @@ function Routes() {
                 <PublicRoute restricted={true} path="/login" component={LogIn} />
                 <PrivateRoute path="/home" component={Home} />
                 <PrivateRoute path="/purchases" component={Purchases} />
+                <PrivateRoute path="/products" component={Products} />
             </Switch>
         </BrowserRouter>
     );

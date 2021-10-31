@@ -2,6 +2,8 @@ import dotenv from 'dotenv';
 import pkg from 'pg';
 
 dotenv.config();
+
+
 const poolConfig = JSON.parse(process.env.POOL_CONFIG);
 const { Pool } = pkg;
 
@@ -15,7 +17,12 @@ pool.on('error', (err, client) => {
 pool.on('connect', () => {
   console.log('Successfully connected!');
 });
-
+/**
+ * Opens a pool connection and runs the query, then releases the client.
+ * @param {string} query  
+ * @param {array<string | number>} values 
+ * @returns {Promise.<Object[]>} response from db
+ */
 export const runQuery = (query, values) => {
   return new Promise((resolve, reject) => {
     pool.connect()

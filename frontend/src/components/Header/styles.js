@@ -67,7 +67,7 @@ export const Container = styled.header`
     .navigate-btn { // ANCHOR
       cursor: not-allowed;
     }
-    .logout-icon, .logout-btn, .purchases-btn {
+    .logout-icon, .logout-btn, .purchases-btn, .products-btn {
       cursor: pointer !important;
     }
 `;

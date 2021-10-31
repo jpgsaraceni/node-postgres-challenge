@@ -1,6 +1,5 @@
 import React, { useContext, useState } from 'react';
 import { PurchasesContext } from '../../providers/PurchasesProvider';
-import { FormModal } from '../Modal';
 
 import { Container } from './styles';
 

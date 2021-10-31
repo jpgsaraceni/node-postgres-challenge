@@ -34,6 +34,23 @@ export const PurchasesProvider = (props) => {
     return result
   }
 
+  const createProduct = (body) => {
+    return new Promise((resolve, reject) => {
+      api.post('/products', {
+          "name": body.name, 
+          "description": body.description,
+          "product_group_id": 2
+        })
+        .then((response) => {
+          if (response.status === 200) resolve(true);
+        }).catch((e) => {
+          console.log(e)
+          reject(e)
+        });
+      });
+  
+    }
+
   const createPurchase = (body) => {
     return new Promise((resolve, reject) => {
     
@@ -72,7 +89,8 @@ export const PurchasesProvider = (props) => {
           purchaseItems,
           payables,
           getPurchases, 
-          createPurchase, 
+          createPurchase,
+          createProduct,
           deletePurchase,
           purchaseDetails,
           productDetails,

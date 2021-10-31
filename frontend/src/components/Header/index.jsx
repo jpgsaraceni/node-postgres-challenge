@@ -29,6 +29,10 @@ function Header() {
       history.push('/purchases');
     }
 
+    function navigateToProducts() {
+      history.push('/products');
+    }
+
     return (
         <Container>
             <div className="top">
@@ -69,8 +73,8 @@ function Header() {
                 </button>
                 <button
                     type="button"
-                    className="navigate-btn"
-                    onClick={() => {}}
+                    className="navigate-btn  products-btn"
+                    onClick={() => navigateToProducts()}
                 >
                     Produtos
                 </button>

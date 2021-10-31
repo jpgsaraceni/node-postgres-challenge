@@ -2,16 +2,16 @@ import React from 'react';
 
 import Header from '../../components/Header';
 import { Container } from './styles';
-import PurchasesMain from '../../components/PurchasesMain';
+import ProductsMain from '../../components/ProductsMain';
 
-function Purchases() {
+function Products() {
 
     return (
         <Container>
             <Header />
-            <PurchasesMain />          
+            <ProductsMain />          
         </Container>
     );
 }
 
-export default Purchases;
+export default Products;

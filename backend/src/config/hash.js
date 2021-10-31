@@ -1,9 +1,15 @@
 import bcrypt from 'bcrypt';
-
-export const compare = (text, hash) => {
+/**
+ * Checks if text matches hash then calls next function
+ * @param {string} text
+ * @param {string} hash
+ * @param {function} next callback function when compare returns true
+ * @returns {Promise} return of callback function
+ */
+export const compare = (text, hash, next) => {
   return new Promise((resolve, reject) => {
     bcrypt.compare(text, hash)
-      .then(result => resolve(result))
+      .then(() => resolve(next))
       .catch(err => reject(err));
   });
 };
