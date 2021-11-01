@@ -26,16 +26,16 @@ const corsOptions = {
 }
 app.use(cors(corsOptions));
 
-app.use(index);
-app.use('/login', loginRoute);
-app.use('/logout', logoutRoute);
-app.use('/products', productRoute);
-app.use('/product_groups', productGroupRoute);
-app.use('/suppliers', supplierRoute);
-app.use('/users', userRoute);
-app.use('/restore', restoreRoute);
-app.use('/purchases', purchaseRoute);
-app.use('/purchase_items', purchaseItemsRoute);
-app.use('/payables', payablesRoute);
+app.use(index); // TODO refactor
+app.use('/login', loginRoute);// refactor ok
+app.use('/logout', logoutRoute); // refactor ok
+app.use('/products', productRoute);// TODO refactor
+app.use('/product_groups', productGroupRoute);// TODO refactor
+app.use('/suppliers', supplierRoute);// TODO refactor
+app.use('/users', userRoute); // refactor ok TODO jsdocs on controller
+app.use('/restore', restoreRoute);// TODO refactor
+app.use('/purchases', purchaseRoute);// TODO refactor
+app.use('/purchase_items', purchaseItemsRoute);// TODO refactor
+app.use('/payables', payablesRoute);// TODO refactor
 
 export default app;

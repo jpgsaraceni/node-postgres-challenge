@@ -7,9 +7,17 @@
 - [x] users route: create
 - [] users route: others
 - [] query.js
+- [x] generic select 
+- [x] generic insert
+- [x] generic update
+- [x] generic delete
+- [] transactions
+- [] requests with dynamic parameters
+- [] evaluate the necessity to use req.params instead of req.body for some values
 - [] database.js
 - [] user backend route and controller
 - [] other backend routes and controllers
+- [] error handling in promises (error log)
 - [] express error handling for invalid request json
 - [] signup
 - [] recover password

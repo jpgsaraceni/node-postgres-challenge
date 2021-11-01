@@ -1,13 +1,16 @@
 import { verify } from '../config/token.js';
-
+/**
+ * Validates jwt with server signature
+ * @param {object} req 
+ * @param {object} res 
+ * @returns {number} responds with 200 or 400
+ */
 export const logout = (req, res) => {
   verify(req)
     .then(() => {
       res.sendStatus(200)
-      console.log(1);
     })
     .catch(() => {
       res.sendStatus(400)
-      console.log(2)
     });
 }

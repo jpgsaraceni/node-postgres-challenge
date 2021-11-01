@@ -1,8 +1,6 @@
 import { runQuery, runSoftDeleteTransaction, runTransaction } from '../config/database.js';
 import { verify } from '../config/session.js';
 
-// FIXME treat the req.body object in the controllers, not here
-
 export const insert = (req, res, table, hash) => {
   const { token } = req.cookies;
   const keys = Object.keys(req.body);
@@ -194,50 +192,168 @@ export const selectFiltered = (table, ...filterParams) => {
 // ANCHOR new query.js file:
 /**
  * 
- * @param {string} email 
- * @returns {Promise<Object>} user information from db
+ * @param {array<string>} columns names of columns to be returned from the query
+ * @param {string} table 
+ * @param  {object} conditions column/value pairs 
+ * @returns {Promise} result of the query
+ * 
+ * @example select(['id', 'name'], 'users', {email: 'test@example.com'})
  */
-export const selectUser = (email) => {
-  return new Promise((resolve, reject) => {
-    const query = 'SELECT id, name, password'
-      + ' FROM users'
-      + ' WHERE $1 = email AND deleted = false';
+export const selectRefactored = (columns, table, conditions) => {
+  let columnsString = '';
+  columns.forEach((column) => columnsString += `${column}, `);
+  columnsString = columnsString.slice(0, -2);
 
-    const values = [email];
+  const conditionKeys = Object.keys(conditions);
+  const conditionValues = Object.values(conditions);
+
+  let filters = '';
+  conditionKeys.forEach((key, i) => filters += `${key} = $${i + 1} AND `);
+
+  return new Promise((resolve, reject) => {
+    const query = `SELECT ${columnsString}`
+      + ` FROM ${table}`
+      + ` WHERE ${filters}deleted = false`;
+
+    const values = conditionValues;
 
     runQuery(query, values)
       .then(result => {
-        if (result.length == 0) reject(401);
-        resolve(result[0]);
+        if (result.length === 0) reject(401);
+        resolve(result);
       }).catch(err => {
         reject(err)
       });
   })
 };
+
 /**
  * 
- * @param {string} name 
- * @param {string} email 
- * @param {string} password hash 
- * @param {number} create_user_id 
- * @returns {Promise<object>}
+ * @param {object} inserts column/value pairs
+ * @param {string} table 
+ * @param  {array} returning what to return from db 
+ * @returns {Promise} result of the query
+ * 
+ * @example insert({email: 'test@example.com', 'name': 'a'}, 'users', ['*'])
  */
-export const insertUser = (name, email, password, create_user_id) => {
-  return new Promise((resolve, reject) => {
-    const query = 'INSERT INTO users'
-      + ' (name, email, password, create_user_id)'
-      + ' VALUES'
-      + ' ($1, $2, $3, $4)'
-      + ' RETURNING *';
+export const insertRefactored = (inserts, table, returning) => {
+  let returningString = '';
+  returning.forEach((column) => returningString += `${column}, `);
+  returningString = returningString.slice(0, -2);
 
-    const values = [name, email, password, create_user_id]
+  const insertColumns = Object.keys(inserts);
+  const insertValues = Object.values(inserts);
+
+  let valuePositions = '';
+  insertColumns.forEach((key, i) => valuePositions += `$${i + 1}, `);
+  valuePositions = valuePositions.slice(0, -2);
+
+  return new Promise((resolve, reject) => {
+    const query = `INSERT INTO ${table} `
+      + ` (${insertColumns})`
+      + ' VALUES'
+      + ` (${valuePositions})`
+      + ` RETURNING ${returningString}`;
+
+    const values = insertValues;
 
     runQuery(query, values)
       .then(result => {
-        if (result.length == 0) reject(401);
-        resolve(result[0]);
+        if (result.length === 0) reject(401);
+        resolve(result);
       }).catch(err => {
         reject(err)
       });
   })
-}
+};
+
+/**
+ * 
+ * @param {object} updates column/value pairs
+ * @param {string} table 
+ * @param {object} conditions column/value pairs
+ * @param  {array} returning what to return from db 
+ * @param  {number} id user who is updating 
+ * @returns {Promise} result of the query
+ * 
+ * @example update({email: 'updated@example.com', 'name': 'a'}, 'users', {email: 'test@example.com'}, ['*'], 1)
+ */
+export const updateRefactored = (updates, table, conditions, returning, id) => {
+  let returningString = '';
+  returning.forEach((column) => returningString += `${column}, `);
+  returningString = returningString.slice(0, -2);
+
+  const updateColumns = Object.keys(updates);
+  const updateValues = Object.values(updates);
+
+  let updatePairs = '';
+  updateColumns.forEach((column, i) => updatePairs += `${column}='${updateValues[i]}', `)
+  updatePairs = updatePairs.slice(0, -2);
+
+  const conditionKeys = Object.keys(conditions);
+  const conditionValues = Object.values(conditions);
+
+  let filters = '';
+  conditionKeys.forEach((key, i) => filters += `${key} = $${i + 2} AND `);
+
+  return new Promise((resolve, reject) => {
+    const query = `UPDATE ${table}`
+      + ` SET ${updatePairs}, update_date=NOW(), update_user_id=$${id}`
+      + ` WHERE ${filters}deleted = false`
+      + ` RETURNING ${returningString}`;
+
+    const values = [id, ...conditionValues];
+    console.log(query, values);
+
+    runQuery(query, values)
+      .then(result => {
+        if (result.length === 0) reject(401);
+        console.log(result)
+        resolve(result);
+      }).catch(err => {
+        console.log(1, err)
+        reject(err)
+      });
+  })
+};
+
+/**
+ * 
+ * @param {string} table 
+ * @param {object} conditions column/value pairs
+ * @param  {array} returning what to return from db 
+ * @param  {number} id user who is deleting
+ * @returns {Promise} result of the query
+ * 
+ * @example update({email: 'updated@example.com', 'name': 'a'}, 'users', {email: 'test@example.com'}, ['*'], 1)
+ */
+export const deleteRefactored = (table, conditions, returning, id) => {
+  let returningString = '';
+  returning.forEach((column) => returningString += `${column}, `);
+  returningString = returningString.slice(0, -2);
+
+  const conditionKeys = Object.keys(conditions);
+  const conditionValues = Object.values(conditions);
+
+  let filters = '';
+  conditionKeys.forEach((key, i) => filters += `${key} = $${i + 2} AND `);
+
+  return new Promise((resolve, reject) => {
+    const query = `UPDATE ${table}`
+      + ` SET deleted=true, update_date=NOW(), update_user_id=$${id}`
+      + ` WHERE ${filters}deleted = false`
+      + ` RETURNING ${returningString}`;
+
+    const values = [id, ...conditionValues];
+
+    runQuery(query, values)
+      .then(result => {
+        if (result.length === 0) reject(401);
+        resolve(result);
+      }).catch(err => {
+        reject(err)
+      });
+  })
+};
+
+// TODO refactor transactions
