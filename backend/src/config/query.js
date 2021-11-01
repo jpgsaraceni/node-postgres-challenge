@@ -205,11 +205,39 @@ export const selectUser = (email) => {
 
     const values = [email];
 
-    runQuery(query, values).then(result => {
-      if (result.length == 0) reject(401);
-      resolve(result[0]);
-    }).catch(err => {
-      reject(err)
-    });
+    runQuery(query, values)
+      .then(result => {
+        if (result.length == 0) reject(401);
+        resolve(result[0]);
+      }).catch(err => {
+        reject(err)
+      });
   })
 };
+/**
+ * 
+ * @param {string} name 
+ * @param {string} email 
+ * @param {string} password hash 
+ * @param {number} create_user_id 
+ * @returns {Promise<object>}
+ */
+export const insertUser = (name, email, password, create_user_id) => {
+  return new Promise((resolve, reject) => {
+    const query = 'INSERT INTO users'
+      + ' (name, email, password, create_user_id)'
+      + ' VALUES'
+      + ' ($1, $2, $3, $4)'
+      + ' RETURNING *';
+
+    const values = [name, email, password, create_user_id]
+
+    runQuery(query, values)
+      .then(result => {
+        if (result.length == 0) reject(401);
+        resolve(result[0]);
+      }).catch(err => {
+        reject(err)
+      });
+  })
+}

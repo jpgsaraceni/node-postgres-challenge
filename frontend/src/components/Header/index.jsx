@@ -18,12 +18,13 @@ function Header() {
 
   function navigateToLogIn() {
     api.post('/logout')
-      .then(response => {
-        if (response.status === 200) {
-          localStorage.removeItem('token');
-          history.push(`/login`);
-        }
-      }).catch(err => console.log(err));
+      .then(() => {
+        localStorage.removeItem('token');
+        history.push(`/login`);
+      }).catch(() => {
+        // localStorage.removeItem('token');
+        // history.push(`/login`);
+      });
   }
 
   function navigateToPurchases() {

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { setUser } from '../../services/auth'
 // import { useContext } from 'react';
@@ -10,8 +10,8 @@ import logo from '../../assets/images/logo.svg';
 
 function LogIn() {
     // states that receive the values of the input fields. Set with onChange events.
-    const [email, setEmail] = useState();
-    const [password, setPassword] = useState();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
     // when these states are set to true, an error message appears below the input fields. Set true when validation fails and false with onChange events.
     const [noEmail, setNoEmail] = useState(false);
@@ -33,7 +33,7 @@ function LogIn() {
         login();
     }
 
-    const login = useCallback(() => {
+    const login = () => {
         if (!email) {
             setNoEmail(true);
             return false;
@@ -53,7 +53,7 @@ function LogIn() {
                 setShowInvalidUserMessage(true);
                 setWait(false)
             });
-    }, [email, password, history]);
+    }
 
     function navigateToSignUp() {
         // history.push(`signup`);

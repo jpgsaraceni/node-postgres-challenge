@@ -1,0 +1,19 @@
+- [x] jwt sign 
+- [x] login backend route and controller
+- [x] jwt verify
+- [x] logout backend route and controller
+- [x] authorization bearer scheme
+- [x] private routes front end
+- [x] users route: create
+- [] users route: others
+- [] query.js
+- [] database.js
+- [] user backend route and controller
+- [] other backend routes and controllers
+- [] express error handling for invalid request json
+- [] signup
+- [] recover password
+- [] memory leak front end login
+- [] frontend jsdocs
+- [] interface improvements
+- [] typescript

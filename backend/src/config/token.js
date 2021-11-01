@@ -15,12 +15,19 @@ export const sign = (id) => {
   })
 }
 
-export const verify = (token) => {
+/**
+ * Checks jwt signature using secret stored in server
+ * @param {object} req
+ * @returns {Promise<object>} decoded jwt
+ */
+export const verify = (req) => {
   return new Promise((resolve, reject) => {
-    jwt.verify(token, secret, (err, decoded) => {
-      console.log(err);
-      if (err) reject(err);
-      if (decoded) resolve(decoded);
-    })
+    if (req.headers.authorization) {
+      const token = req.headers.authorization.split(' ')[1];
+      jwt.verify(token, secret, (err, decoded) => {
+        if (err) reject(err);
+        if (decoded) resolve(decoded);
+      })
+    } else reject(false);
   })
 }
