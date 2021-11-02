@@ -1,4 +1,4 @@
-import Router from 'express-promise-router';
+import Router from 'express';
 import { deletePayables, readPayables, updatePayables, readPayableDetails } from '../controllers/payables.controller.js';
 
 const router = Router();

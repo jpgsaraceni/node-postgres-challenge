@@ -1,4 +1,4 @@
-import Router from 'express-promise-router';
+import Router from 'express';
 import { createSuppliers, readSuppliers, updateSuppliers, deleteSuppliers, readSupplierDetails } from '../controllers/supplier.controller.js'
 
 const router = Router();

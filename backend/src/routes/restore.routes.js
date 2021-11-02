@@ -1,4 +1,4 @@
-import Router from 'express-promise-router';
+import Router from 'express';
 import { restore } from '../controllers/restore.controller.js'
 
 const router = Router();

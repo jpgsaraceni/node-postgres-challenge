@@ -1,4 +1,4 @@
-import Router from 'express-promise-router';
+import Router from 'express';
 import { createProducts, readProducts, updateProducts, deleteProducts, readProductDetails } from '../controllers/product.controller.js'
 
 const router = Router();

@@ -1,4 +1,4 @@
-import Router from 'express-promise-router';
+import Router from 'express';
 import { logout } from '../controllers/logout.controller.js';
 
 const router = Router();
