@@ -1,6 +1,6 @@
-import { readRequest } from '../services/read.js';
-import { updateRequest } from '../services/update.js';
-import { deleteRequest } from '../services/delete.js';
+import readRequest from '../services/read.js';
+import updateRequest from '../services/update.js';
+import deleteRequest from '../services/delete.js';
 
 export const readPurchaseItems = (req, res) => {
   readRequest(req, res, 'purchase_items');

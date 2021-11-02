@@ -1,4 +1,4 @@
-import { restoreRefactored } from '../config/query.js';
+import { restoreQuery } from '../config/query.js';
 import { verify } from '../config/token.js';
 /**
  * Checks authorization header, then passes the req.body.id or req.body (if id was not supplied)
@@ -8,14 +8,14 @@ import { verify } from '../config/token.js';
  * @param {object} res 
  * @param {string} table
  */
-export const restoreRequest = (req, res, table) => {
+const restoreRequest = (req, res, table) => {
   const { body } = req;
   const { id } = body;
   const conditionObj = id ? { id } : { body };
 
   verify(req)
     .then((decoded) => {
-      restoreRefactored(table, conditionObj, ['*'], decoded.id)
+      restoreQuery(table, conditionObj, ['*'], decoded.id)
         .then(() => res.sendStatus(200))
         .catch((err) => {
           console.log(err)
@@ -23,3 +23,5 @@ export const restoreRequest = (req, res, table) => {
         })
     }).catch(() => res.sendStatus(401))
 };
+
+export default restoreRequest

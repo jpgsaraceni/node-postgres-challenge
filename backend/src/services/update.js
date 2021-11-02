@@ -1,5 +1,5 @@
 import { createHash } from '../config/hash.js';
-import { updateRefactored } from '../config/query.js';
+import { updateQuery } from '../config/query.js';
 import { verify } from '../config/token.js';
 /**
  * Checks for a filter object in req.body, if it exists, separates it and deletes from body.
@@ -10,7 +10,7 @@ import { verify } from '../config/token.js';
  * @param {object} res 
  * @param {string} table
  */
-export const updateRequest = async (req, res, table) => {
+const updateRequest = async (req, res, table) => {
   const { body } = req;
   const { filter } = body;
   if (filter) delete body.filter;
@@ -23,8 +23,10 @@ export const updateRequest = async (req, res, table) => {
 
   verify(req)
     .then((decoded) => {
-      updateRefactored(body, table, filter, ['*'], decoded.id)
+      updateQuery(body, table, filter, ['*'], decoded.id)
         .then(() => res.sendStatus(200))
         .catch(() => res.sendStatus(400))
     }).catch(() => res.sendStatus(401))
 };
+
+export default updateRequest;

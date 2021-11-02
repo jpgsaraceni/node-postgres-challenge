@@ -1,195 +1,4 @@
-import { runQuery, runSoftDeleteTransaction, runTransaction } from '../config/database.js';
-import { verify } from '../config/session.js';
-
-export const insert = (req, res, table, hash) => {
-  const { token } = req.cookies;
-  const keys = Object.keys(req.body);
-  const values = Object.values(req.body);
-
-  verify(token).then((decoded) => {
-    if (/\s/g.test(keys)) {
-      res.sendStatus(418);
-      return false;
-    }
-
-    values.push(decoded.id);
-    const count = values.map((key, i) => i + 1);
-
-    const query = `INSERT INTO ${table}`
-      + ` (${keys.join(', ')}, create_user_id)`
-      + ' VALUES'
-      + ` ($${count.join(', $')})`
-      + ' RETURNING *'
-
-    runQuery(query, values)
-      .then(result => res.send(result))
-      .catch((err) => {
-        console.log(err)
-        res.sendStatus(500)
-      });
-  }).catch(() => res.sendStatus(401))
-};
-
-export const select = (req, res, table) => {
-  const { token } = req.cookies;
-  verify(token).then(() => {
-    const query = `SELECT * FROM ${table} WHERE deleted=false`;
-
-    runQuery(query)
-      .then(result => res.send(result))
-      .catch((err) => {
-        console.log(err)
-        res.sendStatus(500)
-      });
-  }).catch(() => res.sendStatus(401))
-};
-
-export const update = (req, res, table, notNull) => { // TODO: options for where
-  const { token } = req.cookies;
-  const keys = Object.keys(req.body);
-  const values = Object.values(req.body);
-
-  // const whereKey = Object.keys(whereObj)[0];
-  // const whereValue = Object.values(whereObj)[0];
-
-  if (notNull) {
-    Object.keys(notNull).forEach(key => keys.push(key)); // FIXME: adds repeated keys into query; works but not cool
-    Object.values(notNull).forEach(value => values.push(value));
-  }
-
-  verify(token).then((decoded) => {
-    if (/\s/g.test(keys) || /\s/g.test(keys)) {
-      res.sendStatus(418);
-      return false;
-    }
-
-    // values.push(decoded.id, whereValue);
-    values.push(decoded.id);
-
-    const count = values.map((key, i) => i + 1);
-    let pairs = keys.map((key, i) => `${key}=$${i + 1}`);
-
-    const query = `UPDATE ${table}`
-      + ` SET ${pairs.join(', ')}, update_date=NOW(), update_user_id=$${count.length}` // FIXME id is included
-      // + ` WHERE ${whereKey}=${count} AND deleted=false`
-      // WHERE 1=1 AND filtro
-      + ' WHERE id=$1 AND deleted=false'
-      + ' RETURNING *';
-
-    console.log(query, values);
-
-    runQuery(query, values)
-      .then(result => res.send(result))
-      .catch((err) => {
-        console.log(err)
-        res.sendStatus(500)
-      });
-  }).catch(() => res.sendStatus(401));
-}
-
-export const deleteQuery = (req, res, table) => { // TODO verify if foreign key to existing rows
-  const { token } = req.cookies;
-  const values = [req.body.id];
-
-  verify(token).then((decoded) => {
-    values.push(decoded.id);
-
-    const query = `UPDATE ${table}`
-      + ` SET deleted=true, update_date=NOW(), update_user_id=$2`
-      + ' WHERE id=$1'
-      + ' RETURNING *';
-
-    runQuery(query, values)
-      .then(result => res.send(result))
-      .catch((err) => {
-        console.log(err)
-        res.sendStatus(500)
-      });
-  }).catch(() => res.sendStatus(401));
-}
-
-export const insertWithTransaction = async (table, ...queryObjects) => {
-  const queryArray = [...queryObjects]
-  const primaryKeys = Object.keys(queryArray[0]);
-  const primaryValues = Object.values(queryArray[0]);
-  queryArray.shift();
-
-  const primaryCount = primaryValues.map((key, i) => i + 1);
-
-  const primaryQuery = `INSERT INTO ${table[0]}`
-    + ` (${primaryKeys.join(', ')})`
-    + ' VALUES'
-    + ` ($${primaryCount.join(', $')})`
-    + ` RETURNING *`;
-
-  let secondaryQueries = [];
-  let secondaryValues = [];
-
-  queryArray.forEach((queryObject, k) => {
-    const keys = Object.keys(queryObject);
-    const values = Object.values(queryObject);
-    values.pop();
-    const count = keys.map((key, i) => i + 1);
-
-    const query = `INSERT INTO ${table[k + 1]}`
-      + ` (${keys.join(', ')})`
-      + ' VALUES'
-      + ` ($${count.join(', $')})`
-      + ` RETURNING *`;
-
-    secondaryQueries.push(query);
-    secondaryValues.push(values);
-  })
-
-  return await runTransaction(primaryQuery, primaryValues, secondaryQueries, secondaryValues);
-}
-
-export const deleteWithTransaction = async (mainTableId, userId, ...tables) => {
-
-  const primaryValues = [mainTableId, userId]
-  const primaryTable = tables[0]
-
-  const secondaryQueries = [];
-  const secondaryValues = [];
-
-  tables.forEach(table => {
-    secondaryQueries.push(`UPDATE ${table}`
-      + ' SET'
-      + ' deleted=true,'
-      + ' update_date=NOW(),'
-      + ' update_user_id=$2'
-      + ' WHERE'
-      + ` ${table == primaryTable ? 'id' : primaryTable.slice(0, -1) + '_id'} = $1 RETURNING *`
-    )
-    secondaryValues.push(primaryValues)
-  })
-
-  const primaryQuery = secondaryQueries.shift();
-
-  return await runSoftDeleteTransaction(primaryQuery, primaryValues, secondaryQueries, secondaryValues);
-}
-
-export const selectFiltered = (table, ...filterParams) => {
-  return new Promise((resolve, reject) => {
-    const queryArray = [...filterParams];
-    let where = 'WHERE '
-
-    queryArray.forEach((object, i) => {
-      const key = Object.keys(object);
-      const value = Object.values(object);
-      const pair = `${key}=${value}`
-      i == 0 ? where += pair : where += `AND ${pair}`;
-    })
-
-    const query = `SELECT * FROM ${table} ${where}`
-
-    runQuery(query)
-      .then(result => resolve(result))
-      .catch(err => reject(err));
-  })
-}
-
-// ANCHOR new query.js file:
+import { runQuery, runSoftDeleteTransaction, runTransaction, runTransactionRefactored } from '../config/database.js';
 /**
  * 
  * @param {array<string>} columns names of columns to be returned from the query
@@ -199,7 +8,7 @@ export const selectFiltered = (table, ...filterParams) => {
  * 
  * @example select(['id', 'name'], 'users', {email: 'test@example.com'})
  */
-export const selectRefactored = (columns, table, conditions) => {
+export const selectQuery = (columns, table, conditions) => {
   let columnsString = '';
   columns.forEach((column) => columnsString += `${column}, `);
   columnsString = columnsString.slice(0, -2);
@@ -240,7 +49,7 @@ export const selectRefactored = (columns, table, conditions) => {
  * 
  * @example insert({email: 'test@example.com', 'name': 'a'}, 'users', ['*'])
  */
-export const insertRefactored = (inserts, table, returning, id) => {
+export const insertQuery = (inserts, table, returning, id) => {
   let returningString = '';
   returning.forEach((column) => returningString += `${column}, `);
   returningString = returningString.slice(0, -2);
@@ -281,7 +90,7 @@ export const insertRefactored = (inserts, table, returning, id) => {
  * 
  * @example update({email: 'updated@example.com', 'name': 'a'}, 'users', {email: 'test@example.com'}, ['*'], 1)
  */
-export const updateRefactored = (updates, table, conditions, returning, id) => {
+export const updateQuery = (updates, table, conditions, returning, id) => {
   let returningString = '';
   returning.forEach((column) => returningString += `${column}, `);
   returningString = returningString.slice(0, -2);
@@ -332,7 +141,7 @@ export const updateRefactored = (updates, table, conditions, returning, id) => {
  * 
  * @example update({email: 'updated@example.com', 'name': 'a'}, 'users', {email: 'test@example.com'}, ['*'], 1)
  */
-export const deleteRefactored = (table, conditions, returning, id) => {
+export const deleteQuery = (table, conditions, returning, id) => {
   let returningString = '';
   returning.forEach((column) => returningString += `${column}, `);
   returningString = returningString.slice(0, -2);
@@ -361,7 +170,7 @@ export const deleteRefactored = (table, conditions, returning, id) => {
   })
 };
 
-export const restoreRefactored = (table, conditions, returning, id) => {
+export const restoreQuery = (table, conditions, returning, id) => {
   let returningString = '';
   returning.forEach((column) => returningString += `${column}, `);
   returningString = returningString.slice(0, -2);
@@ -389,6 +198,83 @@ export const restoreRefactored = (table, conditions, returning, id) => {
         reject(err)
       });
   })
-}
+};
 
+
+export const insertWithTransaction = (inserts, returning, id) => {
+  const insertTables = Object.keys(inserts); // ['purchase', 'items', 'payables']
+  const insertObjects = Object.values(inserts) // [{}, {}, {}]
+
+  const queryArray = [];
+  const valuesArray = [];
+
+  insertTables.forEach((table, i) => {
+    const insertColumns = Object.keys(insertObjects[i]);
+    const insertValues = Object.values(insertObjects[i]);
+
+    let valuePositions = '';
+    insertColumns.forEach((key, j) => valuePositions += `$${j + 2}, `);
+    valuePositions = valuePositions.slice(0, -2);
+
+    let query;
+
+    if (i === 0) {
+      query = `INSERT INTO ${table}s `
+        + ` (create_user_id, ${insertColumns})`
+        + ' VALUES'
+        + ` ($1, ${valuePositions})`
+        + ` RETURNING id`;
+    };
+    if ((i > 0) && (i < (insertTables.length - 1))) {
+      query = `INSERT INTO ${table}s `
+        + ` (create_user_id, ${insertColumns}, ${insertTables[0]}_id)`
+        + ' VALUES'
+        + ` ($1, ${valuePositions}, $${insertColumns.length + 2})`
+        + ` RETURNING id`;
+    };
+    if (i === (insertTables.length - 1)) {
+      query = `INSERT INTO ${table}s `
+        + ` (create_user_id, ${insertColumns}, ${insertTables[0]}_id)`
+        + ' VALUES'
+        + ` ($1, ${valuePositions}, $${insertColumns.length + 2})`
+        + ` RETURNING ${returning}`;
+    }
+
+
+    const values = [id, ...insertValues];
+
+    queryArray.push(query);
+    valuesArray.push(values);
+  })
+  return new Promise((resolve, reject) => {
+    runTransaction(queryArray, valuesArray)
+      .then(() => resolve(true))
+      .catch(() => reject(false))
+  })
+}
 // TODO refactor transactions
+
+export const deleteWithTransaction = async (mainTableId, userId, ...tables) => {
+
+  const primaryValues = [mainTableId, userId]
+  const primaryTable = tables[0]
+
+  const secondaryQueries = [];
+  const secondaryValues = [];
+
+  tables.forEach(table => {
+    secondaryQueries.push(`UPDATE ${table}`
+      + ' SET'
+      + ' deleted=true,'
+      + ' update_date=NOW(),'
+      + ' update_user_id=$2'
+      + ' WHERE'
+      + ` ${table == primaryTable ? 'id' : primaryTable.slice(0, -1) + '_id'} = $1 RETURNING *`
+    )
+    secondaryValues.push(primaryValues)
+  })
+
+  const primaryQuery = secondaryQueries.shift();
+
+  return await runSoftDeleteTransaction(primaryQuery, primaryValues, secondaryQueries, secondaryValues);
+}

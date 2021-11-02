@@ -10,12 +10,17 @@
 - [x] generic delete
 - [x] requests with dynamic parameters
 - [x] backend routes and controllers with simple queries
-- [] other backend routes and controllers with transactions
+- [] purchase route
+- [] delete and update
 - [x] refactor query.js selectFitered method
 - [] refactor query.js transaction methods
+- [] delete and update
+- [] evaluate unifying queries with and without transactions
+- [] evaluate using Promise.all in runTransaction method of database.js
 - [x] evaluate the necessity to use req.params instead of req.body for some values
 - [] architecture
 - [] database.js
+- [] token expiration
 - [] back-end error handling in promises (error log)
 - [] express error handling for invalid request json
 - [] signup front end

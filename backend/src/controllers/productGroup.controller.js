@@ -1,7 +1,7 @@
-import { createRequest } from '../services/create.js';
-import { readRequest } from '../services/read.js';
-import { updateRequest } from '../services/update.js';
-import { deleteRequest } from '../services/delete.js';
+import createRequest from '../services/create.js';
+import readRequest from '../services/read.js';
+import updateRequest from '../services/update.js';
+import deleteRequest from '../services/delete.js';
 
 export const createProductGroups = (req, res) => {
   createRequest(req, res, 'product_groups');

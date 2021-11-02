@@ -1,4 +1,4 @@
-import { selectRefactored } from '../config/query.js';
+import { selectQuery } from '../config/query.js';
 import { verify } from '../config/token.js';
 /**
  * Checks authorization header, then calls select method from query.js to get all registries from db.
@@ -7,14 +7,16 @@ import { verify } from '../config/token.js';
  * @param {object} res 
  * @param {string} table
  */
-export const readRequest = (req, res, table) => {
+const readRequest = (req, res, table) => {
   const { id } = req.params;
   const filter = id ? { id } : {};
 
   verify(req)
     .then(() => {
-      selectRefactored(['*'], table, filter)
+      selectQuery(['*'], table, filter)
         .then(result => res.send(result))
         .catch(err => res.sendStatus(400));
     }).catch(err => res.sendStatus(401))
 };
+
+export default readRequest;

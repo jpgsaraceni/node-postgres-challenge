@@ -1,6 +1,6 @@
 import { sign } from '../config/token.js';
 import { compare } from '../config/hash.js';
-import { selectRefactored } from '../config/query.js';
+import { selectQuery } from '../config/query.js';
 /**
  * Calls method to retrieve user information from database, compares req.body.password to received
  * password, then generates JWT to send to client in response body. If the email is not found in DB
@@ -9,9 +9,9 @@ import { selectRefactored } from '../config/query.js';
  * @param {object} res 
  * @returns {string | number} token or error code 401
  */
-export const loginRequest = (req, res) => {
+const loginRequest = (req, res) => {
   const { email } = req.body
-  selectRefactored(['id', 'password'], 'users', { email })
+  selectQuery(['id', 'password'], 'users', { email })
     .then((dbResponse) => {
       compare(req.body.password.toString(), dbResponse[0].password,
         sign(dbResponse[0].id))
@@ -21,4 +21,6 @@ export const loginRequest = (req, res) => {
           res.sendStatus(401)
         });
     }).catch(() => res.sendStatus(401));
-}
+};
+
+export default loginRequest;

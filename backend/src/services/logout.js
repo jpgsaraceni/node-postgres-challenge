@@ -5,7 +5,7 @@ import { verify } from '../config/token.js';
  * @param {object} res 
  * @returns {number} responds with 200 or 400
  */
-export const logoutRequest = (req, res) => {
+const logoutRequest = (req, res) => {
   verify(req)
     .then(() => {
       res.sendStatus(200)
@@ -13,4 +13,6 @@ export const logoutRequest = (req, res) => {
     .catch(() => {
       res.sendStatus(400)
     });
-}
+};
+
+export default logoutRequest;
