@@ -226,7 +226,6 @@ export const selectRefactored = (columns, table, conditions) => {
       });
   })
 };
-
 /**
  * 
  * @param {object} inserts column/value pairs
@@ -236,7 +235,7 @@ export const selectRefactored = (columns, table, conditions) => {
  * 
  * @example insert({email: 'test@example.com', 'name': 'a'}, 'users', ['*'])
  */
-export const insertRefactored = (inserts, table, returning) => {
+export const insertRefactored = (inserts, table, returning, id) => {
   let returningString = '';
   returning.forEach((column) => returningString += `${column}, `);
   returningString = returningString.slice(0, -2);
@@ -245,17 +244,18 @@ export const insertRefactored = (inserts, table, returning) => {
   const insertValues = Object.values(inserts);
 
   let valuePositions = '';
-  insertColumns.forEach((key, i) => valuePositions += `$${i + 1}, `);
+  insertColumns.forEach((key, i) => valuePositions += `$${i + 2}, `);
   valuePositions = valuePositions.slice(0, -2);
 
   return new Promise((resolve, reject) => {
     const query = `INSERT INTO ${table} `
-      + ` (${insertColumns})`
+      + ` (create_user_id, ${insertColumns})`
       + ' VALUES'
-      + ` (${valuePositions})`
+      + ` ($1, ${valuePositions})`
       + ` RETURNING ${returningString}`;
 
-    const values = insertValues;
+    const values = [id, ...insertValues];
+    console.log(query, values)
 
     runQuery(query, values)
       .then(result => {
@@ -266,7 +266,6 @@ export const insertRefactored = (inserts, table, returning) => {
       });
   })
 };
-
 /**
  * 
  * @param {object} updates column/value pairs
@@ -290,20 +289,23 @@ export const updateRefactored = (updates, table, conditions, returning, id) => {
   updateColumns.forEach((column, i) => updatePairs += `${column}='${updateValues[i]}', `)
   updatePairs = updatePairs.slice(0, -2);
 
-  const conditionKeys = Object.keys(conditions);
-  const conditionValues = Object.values(conditions);
-
   let filters = '';
-  conditionKeys.forEach((key, i) => filters += `${key} = $${i + 2} AND `);
+  let conditionValues = [];
+
+  if (conditions) {
+    const conditionKeys = Object.keys(conditions);
+    conditionValues = Object.values(conditions);
+
+    conditionKeys.forEach((key, i) => filters += `${key} = $${i + 2} AND `);
+  }
 
   return new Promise((resolve, reject) => {
     const query = `UPDATE ${table}`
-      + ` SET ${updatePairs}, update_date=NOW(), update_user_id=$${id}`
+      + ` SET ${updatePairs}, update_date=NOW(), update_user_id=$1`
       + ` WHERE ${filters}deleted = false`
       + ` RETURNING ${returningString}`;
 
     const values = [id, ...conditionValues];
-    console.log(query, values);
 
     runQuery(query, values)
       .then(result => {
@@ -316,7 +318,6 @@ export const updateRefactored = (updates, table, conditions, returning, id) => {
       });
   })
 };
-
 /**
  * 
  * @param {string} table 
@@ -340,7 +341,7 @@ export const deleteRefactored = (table, conditions, returning, id) => {
 
   return new Promise((resolve, reject) => {
     const query = `UPDATE ${table}`
-      + ` SET deleted=true, update_date=NOW(), update_user_id=$${id}`
+      + ` SET deleted=true, update_date=NOW(), update_user_id=$1`
       + ` WHERE ${filters}deleted = false`
       + ` RETURNING ${returningString}`;
 
@@ -348,7 +349,7 @@ export const deleteRefactored = (table, conditions, returning, id) => {
 
     runQuery(query, values)
       .then(result => {
-        if (result.length === 0) reject(401);
+        if (result.length === 0) reject(400);
         resolve(result);
       }).catch(err => {
         reject(err)

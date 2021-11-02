@@ -13,7 +13,7 @@ export const login = (req, res) => {
   const { email } = req.body
   selectRefactored(['id', 'password'], 'users', { email })
     .then((dbResponse) => {
-      compare(req.body.password, dbResponse[0].password,
+      compare(req.body.password.toString(), dbResponse[0].password,
         sign(dbResponse[0].id))
         .then(token => {
           res.send(token)

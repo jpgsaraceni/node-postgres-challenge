@@ -10,15 +10,22 @@ export const compare = (text, hash, next) => {
   return new Promise((resolve, reject) => {
     bcrypt.compare(text, hash)
       .then(() => resolve(next))
-      .catch(err => reject(err));
+      .catch(err => {
+        reject(err)
+        console.log(err)
+      });
   });
 };
 
 export const createHash = (text) => {
   return new Promise((resolve, reject) => {
     bcrypt.hash(text, 10, (err, hash) => {
-      if (err) reject(err);
-      if (hash) resolve(hash);
+      if (err) {
+        reject(err)
+      };
+      if (hash) {
+        resolve(hash)
+      };
     });
   });
 };

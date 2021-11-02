@@ -4,24 +4,24 @@
 - [x] logout backend route and controller
 - [x] authorization bearer scheme
 - [x] private routes front end
-- [x] users route: create
-- [] users route: others
-- [] query.js
 - [x] generic select 
 - [x] generic insert
 - [x] generic update
 - [x] generic delete
-- [] transactions
-- [] requests with dynamic parameters
+- [x] requests with dynamic parameters
+- [x] user backend route and controller
+- [] other backend routes and controllers
+- [x] suppliers
+- [] product_groups
+- [] refactor query.js selectFitered method
+- [] refactor query.js transaction methods
 - [] evaluate the necessity to use req.params instead of req.body for some values
 - [] database.js
-- [] user backend route and controller
-- [] other backend routes and controllers
-- [] error handling in promises (error log)
+- [] back-end error handling in promises (error log)
 - [] express error handling for invalid request json
-- [] signup
-- [] recover password
+- [] signup front end
+- [] recover password front and back ends
 - [] memory leak front end login
-- [] frontend jsdocs
+- [] front-end jsdocs
 - [] interface improvements
 - [] typescript
