@@ -31,13 +31,13 @@ app.use(cors(corsOptions));
 app.use(index); // TODO refactor
 app.use('/login', loginRoute);// refactor ok
 app.use('/logout', logoutRoute); // refactor ok
-app.use('/products', productRoute);// TODO refactor
-app.use('/product_groups', productGroupRoute);// TODO refactor
+app.use('/products', productRoute);// refactor ok
+app.use('/product_groups', productGroupRoute);// refactor ok
 app.use('/suppliers', supplierRoute);// refactor ok
 app.use('/users', userRoute); // refactor ok 
-app.use('/restore', restoreRoute);// TODO refactor
-app.use('/purchases', purchaseRoute);// TODO refactor
-app.use('/purchase_items', purchaseItemsRoute);// TODO refactor
+app.use('/restore', restoreRoute);// refactor ok
+app.use('/purchases', purchaseRoute);// refactor ok
+app.use('/purchase_items', purchaseItemsRoute);// refactor ok
 app.use('/payables', payablesRoute);// TODO refactor
 
 export default app;

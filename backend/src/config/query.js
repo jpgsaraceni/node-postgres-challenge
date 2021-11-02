@@ -204,11 +204,16 @@ export const selectRefactored = (columns, table, conditions) => {
   columns.forEach((column) => columnsString += `${column}, `);
   columnsString = columnsString.slice(0, -2);
 
-  const conditionKeys = Object.keys(conditions);
-  const conditionValues = Object.values(conditions);
-
   let filters = '';
-  conditionKeys.forEach((key, i) => filters += `${key} = $${i + 1} AND `);
+  let conditionValues = [];
+
+  if (conditions) {
+    const conditionKeys = Object.keys(conditions);
+    conditionValues = Object.values(conditions);
+
+    conditionKeys.forEach((key, i) => filters += `${key} = $${i + 1} AND `);
+  }
+
 
   return new Promise((resolve, reject) => {
     const query = `SELECT ${columnsString}`
@@ -255,7 +260,6 @@ export const insertRefactored = (inserts, table, returning, id) => {
       + ` RETURNING ${returningString}`;
 
     const values = [id, ...insertValues];
-    console.log(query, values)
 
     runQuery(query, values)
       .then(result => {
@@ -356,5 +360,35 @@ export const deleteRefactored = (table, conditions, returning, id) => {
       });
   })
 };
+
+export const restoreRefactored = (table, conditions, returning, id) => {
+  let returningString = '';
+  returning.forEach((column) => returningString += `${column}, `);
+  returningString = returningString.slice(0, -2);
+
+  const conditionKeys = Object.keys(conditions);
+  const conditionValues = Object.values(conditions);
+
+  let filters = '';
+  conditionKeys.forEach((key, i) => filters += `${key} = $${i + 2} AND `);
+
+  return new Promise((resolve, reject) => {
+    const query = `UPDATE ${table}`
+      + ` SET deleted=false, update_date=NOW(), update_user_id=$1`
+      + ` WHERE ${filters}deleted = true`
+      + ` RETURNING ${returningString}`;
+
+    const values = [id, ...conditionValues];
+    console.log(query, values);
+
+    runQuery(query, values)
+      .then(result => {
+        if (result.length === 0) reject(result);
+        resolve(result);
+      }).catch(err => {
+        reject(err)
+      });
+  })
+}
 
 // TODO refactor transactions

@@ -9,13 +9,12 @@
 - [x] generic update
 - [x] generic delete
 - [x] requests with dynamic parameters
-- [x] user backend route and controller
-- [] other backend routes and controllers
-- [x] suppliers
-- [] product_groups
-- [] refactor query.js selectFitered method
+- [x] backend routes and controllers with simple queries
+- [] other backend routes and controllers with transactions
+- [x] refactor query.js selectFitered method
 - [] refactor query.js transaction methods
-- [] evaluate the necessity to use req.params instead of req.body for some values
+- [x] evaluate the necessity to use req.params instead of req.body for some values
+- [] architecture
 - [] database.js
 - [] back-end error handling in promises (error log)
 - [] express error handling for invalid request json

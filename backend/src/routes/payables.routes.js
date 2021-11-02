@@ -1,10 +1,10 @@
 import Router from 'express';
-import { deletePayables, readPayables, updatePayables, readPayableDetails } from '../controllers/payables.controller.js';
+import { deletePayables, readPayables, updatePayables } from '../controllers/payables.controller.js';
 
 const router = Router();
 
 router.get('/', readPayables);
-router.get('/:id', readPayableDetails);
+router.get('/:id', readPayables);
 router.put('/', updatePayables);
 router.delete('/', deletePayables);
 

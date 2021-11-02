@@ -1,3 +1,4 @@
+import { createHash } from '../config/hash.js';
 import { updateRefactored } from '../config/query.js';
 import { verify } from '../config/token.js';
 /**
@@ -9,10 +10,16 @@ import { verify } from '../config/token.js';
  * @param {object} res 
  * @param {string} table
  */
-export const updateRequest = (req, res, table) => {
+export const updateRequest = async (req, res, table) => {
   const { body } = req;
   const { filter } = body;
   if (filter) delete body.filter;
+
+  if (body.password) {
+    await createHash(body.password.toString())
+      .then((hash) => body.password = hash)
+  };
+  console.log(body, filter)
 
   verify(req)
     .then((decoded) => {

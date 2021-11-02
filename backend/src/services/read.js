@@ -8,9 +8,12 @@ import { verify } from '../config/token.js';
  * @param {string} table
  */
 export const readRequest = (req, res, table) => {
+  const { id } = req.params;
+  const filter = id ? { id } : {};
+
   verify(req)
     .then(() => {
-      selectRefactored(['*'], table, {})
+      selectRefactored(['*'], table, filter)
         .then(result => res.send(result))
         .catch(err => res.sendStatus(400));
     }).catch(err => res.sendStatus(401))

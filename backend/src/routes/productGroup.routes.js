@@ -5,6 +5,7 @@ const router = Router();
 
 router.post('/', createProductGroups);
 router.get('/', readProductGroups);
+router.get('/:id', readProductGroups);
 router.put('/', updateProductGroups);
 router.delete('/', deleteProductGroups);
 
